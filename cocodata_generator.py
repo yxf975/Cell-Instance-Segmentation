@@ -48,7 +48,7 @@ def annotate(idx, row, cat_ids):
         'bbox': bbox,
         'area': area,
         'image_id': row['id'],
-        'category_id': 1,  # cat_ids[row['cell_type']],
+        'category_id': cat_ids[row['cell_type']],  # cat_ids[row['cell_type']],
         'iscrowd': 0,
         'id': idx
     }
@@ -57,7 +57,7 @@ def annotate(idx, row, cat_ids):
 
 def coco_structure(df, workers=4):
     # Building the header
-    cat_ids = {"cell": 1}
+    cat_ids = {"astro": 1, "cort": 2, "shsy5y": 3}
     cats = [{'name': name, 'id': id} for name, id in cat_ids.items()]
     images = [{'id': id, 'width': row.width, 'height': row.height, 'file_name': f'{id}.png'} \
               for id, row in df.groupby('id').agg('first').iterrows()]
@@ -106,6 +106,7 @@ if __name__ == "__main__":
                  backend='threading')(delayed(run_copy)(row) for _, row in tqdm(
         tmp_df.iterrows(), total=len(tmp_df)))
 
+    # check
     annFile = Path(targetDataDir + '/annotations_valid.json')
     coco = COCO(annFile)
     imgIds = coco.getImgIds()

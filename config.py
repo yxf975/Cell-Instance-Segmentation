@@ -1,3 +1,5 @@
+num_classes = 3
+
 # model settings
 model = dict(
     type='MaskRCNN',
@@ -44,7 +46,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=1,
+            num_classes=num_classes,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -63,7 +65,7 @@ model = dict(
             num_convs=4,
             in_channels=256,
             conv_out_channels=256,
-            num_classes=1,
+            num_classes=num_classes,
             loss_mask=dict(
                 type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))),
     # model training and testing settings
@@ -121,18 +123,18 @@ model = dict(
 
 # dataset settings
 dataset_type = 'CocoDataset'
-classes = ('cell',) # Added
-data_root = '../cellSegmentation/sartorius-coco-dataset/' # Modified
+classes = ['astro', 'cort', 'shsy5y']  # Added
+data_root = '../Cell-Instance-Segmentation/sartorius_coco_dataset/'  # Modified
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize',
-         img_scale=(768, 768), # [(1280, 1280), (1152, 1152), (1024, 1024)],
-#          multiscale_mode='value',
+         img_scale=(768, 768),  # [(1280, 1280), (1152, 1152), (1024, 1024)],
+         #          multiscale_mode='value',
          keep_ratio=True),
-    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5), # augmentation starts
+    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # augmentation starts
     dict(type='PhotoMetricDistortion',
          brightness_delta=32, contrast_range=(0.5, 1.5),
          saturation_range=(0.5, 1.5), hue_delta=18),
@@ -145,7 +147,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(768, 768), # (1280, 1280),
+        img_scale=(768, 768),  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -157,31 +159,29 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=12, # BATCH_SIZE
+    samples_per_gpu=12,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations_train.json', # Modified
-        img_prefix=data_root + 'train2017/', # Modified
-        classes=classes, # Added
+        ann_file=data_root + 'annotations_train.json',  # Modified
+        img_prefix=data_root + 'train/',  # Modified
+        classes=classes,  # Added
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations_valid.json', # Modified
-        img_prefix=data_root + 'valid2017/', # Modified
-        classes=classes, # Added
+        ann_file=data_root + 'annotations_valid.json',  # Modified
+        img_prefix=data_root + 'valid/',  # Modified
+        classes=classes,  # Added
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations_valid.json', # Modified
-        img_prefix=data_root + 'valid2017/', # Modified
-        classes=classes, # Added
+        ann_file=data_root + 'annotations_valid.json',  # Modified
+        img_prefix=data_root + 'valid/',  # Modified
+        classes=classes,  # Added
         pipeline=test_pipeline))
 evaluation = dict(interval=1,
-                  metric=['bbox','segm'], # bbox, segm
+                  metric=['bbox', 'segm'],  # bbox, segm
                   save_best='segm_mAP')
-
-
 
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
@@ -202,15 +202,15 @@ log_config = dict(
     interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
-        dict(type='WandbLoggerHook', # wandb logger
+        dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-public',
                               name=f'mask_rcnn-resnet50-768x768-fold0',
-                              config={'config':'mask_rcnn_r50_fpn_1x_coco',
-                                      'exp_name':'mask_rcnn-resnet50-768x768',
-                                      'comment':'baseline',
-                                      'batch_size':12,
-                                      'lr':0.020
-                                     },
+                              config={'config': 'mask_rcnn_r50_fpn_1x_coco',
+                                      'exp_name': 'mask_rcnn-resnet50-768x768',
+                                      'comment': 'baseline',
+                                      'batch_size': 12,
+                                      'lr': 0.020
+                                      },
                               group='exp_name',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
