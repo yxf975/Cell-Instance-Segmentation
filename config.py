@@ -2,20 +2,20 @@ num_classes = 3
 
 # model settings
 model = dict(
-    type='MaskRCNN',
+    type='MaskRCNN',  # model类型
     backbone=dict(
-        type='ResNet',
+        type='ResNet',  # backbone类型
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
+        frozen_stages=1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
-        style='pytorch',
+        style='pytorch',  # 网络风格：如果设置pytorch，则stride为2的层是conv3x3的卷积层；如果设置caffe，则stride为2的层是第一个conv1x1的卷积层
         init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
     neck=dict(
-        type='FPN',
-        in_channels=[256, 512, 1024, 2048],
+        type='FPN',  # neck类型
+        in_channels=[256, 512, 1024, 2048], # 输入的各个stage的通道数
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
