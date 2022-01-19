@@ -100,7 +100,7 @@ if __name__ == "__main__":
         img = mmcv.imread('../data/test/' + file)
         result = inference_detector(model, img)
         show_result_pyplot(model, img, result)
-        all_masks = []
+        previous_masks = []
         for i, classe in enumerate(result[0]):
             if classe.shape != (0, 5):
                 bbs = classe
@@ -114,7 +114,7 @@ if __name__ == "__main__":
                         #                 if cnf >= confidence_thresholds[i]:
                         mask = get_mask_from_result(sg)
                         mask = remove_overlapping_pixels(mask, previous_masks)
-                        all_masks.append(mask)
+                        previous_masks.append(mask)
 
     # evaluation
 
