@@ -131,7 +131,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),
-    # dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
+    dict(type='RandomFlip', flip_ratio=0.0),  # Augmentation pipeline that flip the images and their annotations
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
