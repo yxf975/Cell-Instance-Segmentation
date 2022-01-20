@@ -134,11 +134,11 @@ train_pipeline = [
          img_scale=(768, 768),  # [(1280, 1280), (1152, 1152), (1024, 1024)],
          #          multiscale_mode='value',
          keep_ratio=True),
-    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # augmentation starts
+    dict(type='Rp', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # augmentation starts
     dict(type='PhotoMetricDistortion',
          brightness_delta=32, contrast_range=(0.5, 1.5),
          saturation_range=(0.5, 1.5), hue_delta=18),
-    dict(type='Normalize', **img_norm_cfg),
+    dict(type='NorandomFlimalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
