@@ -136,7 +136,7 @@ train_pipeline = [
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
-    # dict(type='Normalize', **img_norm_cfg),
+    dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
@@ -157,7 +157,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=8,  # BATCH_SIZE
+    samples_per_gpu=4,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
