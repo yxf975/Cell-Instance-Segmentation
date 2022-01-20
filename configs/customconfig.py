@@ -250,7 +250,7 @@ train_pipeline = [
          update_pad_shape=False,
          skip_img_without_anno=True),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),    # Pipeline that decides which keys in the data should be passed to the detector
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
