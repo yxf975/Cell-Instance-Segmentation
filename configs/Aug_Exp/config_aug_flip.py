@@ -137,7 +137,7 @@ train_pipeline = [
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
     # dict(type='Normalize', **img_norm_cfg),
-    # dict(type='Pad', size_divisor=32),
+    dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]

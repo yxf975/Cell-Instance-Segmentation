@@ -131,12 +131,12 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),
-    # dict(type='Rp', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
+    # dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
-    # dict(type='NorandomFlimalize', **img_norm_cfg),
-    # dict(type='Pad', size_divisor=32),
+    # dict(type='Normalize', **img_norm_cfg),
+    dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
