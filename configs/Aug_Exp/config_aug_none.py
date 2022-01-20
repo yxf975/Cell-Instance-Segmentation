@@ -130,31 +130,31 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    # dict(type='Resize',  # Augmentation pipeline that resize the images and their annotations
-    #      ),
-    dict(type='RandomFlip'),  # Augmentation pipeline that flip the images and their annotations
+    dict(type='Resize',     # Augmentation pipeline that resize the images and their annotations
+         img_scale=(768, 768), keep_ratio=True),
+    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0),  # Augmentation pipeline that flip the images and their annotations
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
-    # dict(type='NorandomFlimalize', **img_norm_cfg),
+    dict(type='Normalize', **img_norm_cfg),
     # dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    # dict(
-    #     type='MultiScaleFlipAug',
-    #     img_scale=(768, 768),  # (1280, 1280),
-    #     flip=False,
-    #     transforms=[
-    #         dict(type='Resize', keep_ratio=True),
-    #         dict(type='RandomFlip'),
-    #         dict(type='Normalize', **img_norm_cfg),
-    #         dict(type='Pad', size_divisor=32),
-    #         dict(type='ImageToTensor', keys=['img']),
-    #         dict(type='Collect', keys=['img']),
-    #     ])
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(768, 768),  # (1280, 1280),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(type='Normalize', **img_norm_cfg),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img']),
+        ])
 ]
 data = dict(
     samples_per_gpu=8,  # BATCH_SIZE
