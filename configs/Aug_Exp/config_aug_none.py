@@ -130,8 +130,8 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize',  # Augmentation pipeline that resize the images and their annotations
-         ),
+    # dict(type='Resize',  # Augmentation pipeline that resize the images and their annotations
+    #      ),
     dict(type='RandomFlip'),  # Augmentation pipeline that flip the images and their annotations
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
