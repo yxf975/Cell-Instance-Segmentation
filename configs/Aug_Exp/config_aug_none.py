@@ -15,7 +15,7 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
     neck=dict(
         type='FPN',  # neck类型
-        in_channels=[256, 512, 1024, 2048], # 输入的各个stage的通道数
+        in_channels=[256, 512, 1024, 2048],  # 输入的各个stage的通道数
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -130,11 +130,9 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    # dict(type='Resize',     # Augmentation pipeline that resize the images and their annotations
-    #      img_scale=(768, 768),  # [(1280, 1280), (1152, 1152), (1024, 1024)],
-    #      #          multiscale_mode='value',
-    #      keep_ratio=True),
-    # dict(type='Rp', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
+    dict(type='Resize',  # Augmentation pipeline that resize the images and their annotations
+         ),
+    dict(type='RandomFlip'),  # Augmentation pipeline that flip the images and their annotations
     # dict(type='PhotoMetricDistortion',
     #      brightness_delta=32, contrast_range=(0.5, 1.5),
     #      saturation_range=(0.5, 1.5), hue_delta=18),
