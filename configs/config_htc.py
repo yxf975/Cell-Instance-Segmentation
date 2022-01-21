@@ -270,7 +270,7 @@ test_pipeline = [
 ]
 holdout = 0
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=8,
     workers_per_gpu=2,
     train=[dict(
             classes=classes,
@@ -336,7 +336,7 @@ load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_r101_fpn_20
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
-gpu_ids = (2, 3)
+# gpu_ids = (2, 3)
 
 
 only_swa_training = False
