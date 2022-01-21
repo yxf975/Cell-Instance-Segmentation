@@ -130,7 +130,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=(768, 768), keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
+    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
     dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=[0.5, 0.5]),  # Augmentation pipeline that flip the images and their annotations
     dict(type='PhotoMetricDistortion',
          brightness_delta=32, contrast_range=(0.5, 1.5),
@@ -144,7 +144,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(768, 768),  # (1280, 1280),
+        img_scale=[(1333, 1333), (800, 800)],  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -201,7 +201,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-aug-exp',
-                              name=f'v2-multi-augumentation',
+                              name=f'v3-multi-augumentation',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
