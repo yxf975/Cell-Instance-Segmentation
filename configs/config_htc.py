@@ -216,7 +216,7 @@ model = dict(
             max_per_img=100,
             mask_thr_binary=0.5)))
 dataset_type = 'CocoDataset'
-data_root = 'data/cell/'
+data_root = '../data/'
 classes = ['shsy5y', 'astro', 'cort']
 
 albu_train_transforms = [
@@ -294,7 +294,7 @@ data = dict(
 )
 
 nx = 1
-work_dir = f'./work_dirs/cell/htcr2101_{nx}x_2rpn_d2_800_f0'
+work_dir = f'./work_dirs/htcr2101_{nx}x_2rpn_d2_800_f0'
 evaluation = dict(
     classwise=True,
     interval=12,
@@ -312,14 +312,30 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 total_epochs = 12 * nx
 runner = dict(type='EpochBasedRunner', max_epochs=total_epochs)
 checkpoint_config = dict(interval=total_epochs, save_optimizer=False)
-log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+log_config = dict(
+    interval=50,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        dict(type='WandbLoggerHook',  # wandb logger
+             init_kwargs=dict(project='sartorius-5-fold',
+                              name=f'model-htc',
+                              config={'config': 'htc_r101_fpn_20e_coco',
+                                      'exp_name': 'htc-test',
+                                      'comment': 'baseline',
+                                      'batch_size': 4,
+                                      'lr': 0.020
+                                      },
+                              group='exp_name',
+                              entity=None))
+        # dict(type='TensorboardLoggerHook')
+    ])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = './weights/htc_r2_101_fpn_20e_coco-3a8d2112.pth'
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_r101_fpn_20e_coco/htc_r101_fpn_20e_coco_20200317-9b41b48f.pth'
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
-gpu_ids=(2,3)
+gpu_ids = (2, 3)
 
 
 only_swa_training = False

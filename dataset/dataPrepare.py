@@ -35,11 +35,12 @@ def rle_encode_less_memory(img):
 
 
 if __name__ == "__main__":
-    file_names = glob.glob("../data/train/*.png")
-    labels = pd.read_csv("../data/train.csv")
+    file_names = glob.glob("../../data/train/*.png")
+    labels = pd.read_csv("../../data/train.csv")
 
     all_categories = [{"id":(i + 1), "name": v} for i, v in enumerate(labels.cell_type.unique())]
     category_dict = {v: i + 1 for i, v in enumerate(labels.cell_type.unique())}
+    print(category_dict)
 
     split = KFold(5, random_state=0, shuffle=True)
     img_ids = np.array(labels.id.unique())
