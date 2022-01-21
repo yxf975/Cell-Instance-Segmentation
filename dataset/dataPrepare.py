@@ -38,7 +38,7 @@ if __name__ == "__main__":
     file_names = glob.glob("../../data/train/*.png")
     labels = pd.read_csv("../../data/train.csv")
 
-    all_categories = [{"id":(i + 1), "name": v} for i, v in enumerate(labels.cell_type.unique())]
+    all_categories = [{"id": (i + 1), "name": v} for i, v in enumerate(labels.cell_type.unique())]
     category_dict = {v: i + 1 for i, v in enumerate(labels.cell_type.unique())}
     print(category_dict)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             masks = group.annotation.tolist()
             cell_types = group.cell_type.tolist()
             assert len(set(cell_types)) == 1
-            img = cv2.imread(os.path.join("../data/train", img_id + ".png"))
+            img = cv2.imread(os.path.join("../../data/train", img_id + ".png"))
             H, W = img.shape[:2]
 
             ms = []
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 img_cut = img[hstarts[i]:hends[i], wstarts[j]:wends[j]]
                 mask_cut = ms[hstarts[i]:hends[i], wstarts[j]:wends[j]]
                 mask_cut = mask_cut[..., mask_cut.sum((0, 1)) > 0.25 * ms_sum]
-                cv2.imwrite(os.path.join("../data/train_tiny/images", f"{img_id}_{i}_{j}.jpg"), img_cut)
+                cv2.imwrite(os.path.join("../../data/train_tiny/images", f"{img_id}_{i}_{j}.jpg"), img_cut)
                 images.append({
                     "id": f"{img_id}_{i}_{j}",
                     "file_name": f"{img_id}_{i}_{j}.jpg",
