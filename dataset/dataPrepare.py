@@ -103,7 +103,7 @@ if __name__ == "__main__":
                         "area": int(area)
                     })
 
-        with open(f"../data/train_tiny/annotations/fold_{fold}.json", "w") as f:
+        with open(f"../../data/train_tiny/annotations/fold_{fold}.json", "w") as f:
             json.dump({"images": images, "annotations": annotations, "categories": all_categories}, f)
     #         json.dump({"images": images, "annotations": annotations, "categories": [{"id": 1, "name": "cort"}]}, f)
 
