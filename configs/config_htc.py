@@ -276,7 +276,7 @@ data = dict(
             classes=classes,
             # type="DownSampleCocoDataset",
             type=dataset_type,
-            downsample=2,
+            # downsample=2,
             ann_file=data_root + f'train_tiny/annotations/fold_{fold}.json',
             img_prefix=data_root + 'train_tiny/images/',
             pipeline=train_pipeline) for fold in range(5) if fold != holdout],
