@@ -298,8 +298,9 @@ nx = 1
 work_dir = f'./work_dirs/htcr2101_{nx}x_2rpn_d2_800_f0'
 evaluation = dict(
     classwise=True,
-    interval=12,
+    interval=1,
     metric=['bbox', 'segm'],
+    save_best='segm_mAP',
     jsonfile_prefix=f"{work_dir}/valid")
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -319,7 +320,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-5-fold',
-                              name=f'model-htc',
+                              name=f'model-htc-v2',
                               config={'config': 'htc_r101_fpn_20e_coco',
                                       'exp_name': 'htc-test',
                                       'comment': 'baseline',
