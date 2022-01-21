@@ -200,8 +200,8 @@ log_config = dict(
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
-             init_kwargs=dict(project='sartorius-aug-allv3',
-                              name=f'v3-multi-augumentation',
+             init_kwargs=dict(project='sartorius-aug-exp',
+                              name=f'v4-multi-augumentation',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
