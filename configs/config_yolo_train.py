@@ -19,7 +19,7 @@ model = dict(
     test_cfg=dict(score_thr=0.01, nms=dict(type='nms', iou_threshold=0.65))
 )
 
-dataset_type = 'CellDataset'
+dataset_type = 'CocoDataset'
 classes = ('shsy5y', 'astro', 'cort')
 data_root = '../data/'
 train_pipeline = [
@@ -142,7 +142,7 @@ log_config = dict(interval=10, hooks=[dict(type='TextLoggerHook')])
 custom_hooks = [dict(type='NumClassCheckHook')]
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'work_dirs/yolox_x_livecell/epoch_15.pth'
+load_from = 'work_dirs/YoloLiveCellPretrain/epoch_15.pth'
 resume_from = None
 workflow = [('train', 1)]
 custom_hooks = [

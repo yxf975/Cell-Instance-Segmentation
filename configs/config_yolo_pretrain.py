@@ -14,7 +14,7 @@ model = dict(
         width=1.25,
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='../data/checkpoints/yolox_x_coco.pth',
+            checkpoint='https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth',
             prefix='backbone'
         )
     ),
@@ -26,7 +26,7 @@ model = dict(
         in_channels=[256, 512, 1024],
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='/data/checkpoints/yolox_x_coco.pth',
+            checkpoint='https://download.openmmlab.com/mmdetection/v2.0/yolox/yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth',
             prefix='head'
         )
     ),
@@ -34,9 +34,10 @@ model = dict(
     test_cfg=dict(score_thr=0.01, nms=dict(type='nms', iou_threshold=0.65))
 )
 
-dataset_type = 'CellDataset'
+dataset_type = 'CocoDataset'
 classes = ('shsy5y', 'a172', 'bt474', 'bv2', 'huh7', 'mcf7', 'skov3', 'skbr3')
 data_root = '../data/LIVECell_dataset_2021/'
+work_dir = f'./work_dirs/YoloLiveCellPretrain'
 train_pipeline = [
     dict(type='Mosaic', img_scale=img_scale, pad_val=114.0),
     dict(
@@ -152,7 +153,26 @@ lr_config = dict(
 
 runner = dict(type='EpochBasedRunner', max_epochs=15)
 checkpoint_config = dict(interval=1)
-log_config = dict(interval=10, hooks=[dict(type='TextLoggerHook')])
+# log_config = dict(interval=10, hooks=[dict(type='TextLoggerHook')])
+
+log_config = dict(
+    interval=10,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        dict(type='WandbLoggerHook',  # wandb logger
+             init_kwargs=dict(project='sartorius-liveCell-Pretrain',
+                              name=f'Yolo-x',
+                              config={'config': 'yolo',
+                                      'exp_name': 'htc-test',
+                                      'comment': 'baseline',
+                                      'batch_size': 4,
+                                      'lr': 0.020
+                                      },
+                              group='yolo',
+                              entity=None))
+        # dict(type='TensorboardLoggerHook')
+    ])
+
 custom_hooks = [dict(type='NumClassCheckHook')]
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
