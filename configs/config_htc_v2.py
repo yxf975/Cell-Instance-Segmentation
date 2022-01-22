@@ -256,7 +256,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=[(1333, 1333), (1024, 1024), (800, 800)],
+        img_scale=[(1333, 1333), (800, 800)],
         flip=True,
         flip_direction=["horizontal","vertical"],
         transforms=[

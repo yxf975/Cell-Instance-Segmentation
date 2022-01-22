@@ -258,7 +258,7 @@ test_pipeline = [
         type='MultiScaleFlipAug',
         img_scale=[(1333, 1333), (1024, 1024), (800, 800)],
         flip=True,
-        flip_direction=["horizontal","vertical"],
+        flip_direction=["horizontal", "vertical"],
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
