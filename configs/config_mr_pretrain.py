@@ -180,6 +180,7 @@ data = dict(
         classes=classes,  # Added
         pipeline=test_pipeline))
 evaluation = dict(interval=1,
+                  classwise=True,
                   metric=['bbox', 'segm'],  # bbox, segm
                   save_best='segm_mAP')
 gpu_ids = range(5, 6)
