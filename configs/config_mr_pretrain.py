@@ -182,7 +182,7 @@ data = dict(
 evaluation = dict(interval=1,
                   metric=['bbox', 'segm'],  # bbox, segm
                   save_best='segm_mAP')
-
+gpu_ids = (5, 6)
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
