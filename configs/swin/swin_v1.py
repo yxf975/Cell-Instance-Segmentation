@@ -223,7 +223,6 @@ evaluation = dict(interval=1,
 
 # optimizer
 optimizer = dict(
-    _delete_=True,
     type='AdamW',
     lr=0.0001,
     betas=(0.9, 0.999),
