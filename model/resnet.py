@@ -298,6 +298,76 @@ def _resnet(
     return model
 
 
+# ASPP模块
+class ASPPConv(nn.Sequential):
+    def __init__(self, in_channels: int, out_channels: int, dilation: int) -> None:
+        super(ASPPConv, self).__init__(
+            nn.Conv2d(in_channels, out_channels, 3, padding=dilation, dilation=dilation, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU()
+        )
+
+
+class ASPPPooling(nn.Sequential):
+    def __init__(self, in_channels: int, out_channels: int) -> None:
+        super(ASPPPooling, self).__init__(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(in_channels, out_channels, 1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU()
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        size = x.shape[-2:]
+        for mod in self:
+            x = mod(x)
+        return F.interpolate(x, size=size, mode='bilinear', align_corners=False)
+
+
+class ASPP(nn.Module):
+    def __init__(self, in_channels: int, atrous_rates: List[int], out_channels: int = 256) -> None:
+        super(ASPP, self).__init__()
+        modules = [
+            nn.Sequential(nn.Conv2d(in_channels, out_channels, 1, bias=False),
+                          nn.BatchNorm2d(out_channels),
+                          nn.ReLU())
+        ]
+
+        #创建多个不同rate空洞卷积层并添加到module中
+        rates = tuple(atrous_rates)
+        for rate in rates:
+            modules.append(ASPPConv(in_channels, out_channels, rate))
+
+        # 加入pooling层
+        modules.append(ASPPPooling(in_channels, out_channels))
+
+        self.convs = nn.ModuleList(modules)
+
+        self.project = nn.Sequential(
+            nn.Conv2d(len(self.convs) * out_channels, out_channels, 1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
+            nn.Dropout(0.5)
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        _res = []
+        for conv in self.convs:
+            _res.append(conv(x))
+        res = torch.cat(_res, dim=1)
+        return self.project(res)
+
+
+class DeepLabHead(nn.Sequential):
+    def __init__(self, in_channels: int, num_classes: int) -> None:
+        super(DeepLabHead, self).__init__(
+            ASPP(in_channels, [12, 24, 36]),
+            nn.Conv2d(256, 256, 3, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Conv2d(256, num_classes, 1)
+        )
+
 def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
