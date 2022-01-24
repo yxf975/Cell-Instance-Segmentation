@@ -7,7 +7,6 @@ fp16 = dict(loss_scale=dict(init_scale=512))
 model = dict(
     type='MaskRCNN',
     backbone=dict(
-        _delete_=True,
         type='SwinTransformer',
         embed_dims=96,
         depths=[2, 2, 18, 2],
