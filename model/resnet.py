@@ -3,6 +3,7 @@ from typing import Type, Any, Callable, Union, List, Optional
 import torch
 import torch.nn as nn
 from torch import Tensor
+from torch.nn import functional as F
 
 from .._internally_replaced_utils import load_state_dict_from_url
 from ..utils import _log_api_usage_once
