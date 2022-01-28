@@ -144,38 +144,39 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='RandomFlip', flip_ratio=0.5),
-    dict(
-        type='AutoAugment',
-        policies=[[
-            dict(
-                type='Resize',
-                img_scale=[(480, 1333), (512, 1333), (544, 1333), (576, 1333),
-                           (608, 1333), (640, 1333), (672, 1333), (704, 1333),
-                           (736, 1333), (768, 1333), (800, 1333)],
-                multiscale_mode='value',
-                keep_ratio=True)
-        ],
-            [
-                dict(
-                    type='Resize',
-                    img_scale=[(400, 1333), (500, 1333), (600, 1333)],
-                    multiscale_mode='value',
-                    keep_ratio=True),
-                dict(
-                    type='RandomCrop',
-                    crop_type='absolute_range',
-                    crop_size=(384, 600),
-                    allow_negative_crop=True),
-                dict(
-                    type='Resize',
-                    img_scale=[(480, 1333), (512, 1333), (544, 1333),
-                               (576, 1333), (608, 1333), (640, 1333),
-                               (672, 1333), (704, 1333), (736, 1333),
-                               (768, 1333), (800, 1333)],
-                    multiscale_mode='value',
-                    override=True,
-                    keep_ratio=True)
-            ]]),
+    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),
+    # dict(
+    #     type='AutoAugment',
+    #     policies=[[
+    #         dict(
+    #             type='Resize',
+    #             img_scale=[(480, 1333), (512, 1333), (544, 1333), (576, 1333),
+    #                        (608, 1333), (640, 1333), (672, 1333), (704, 1333),
+    #                        (736, 1333), (768, 1333), (800, 1333)],
+    #             multiscale_mode='value',
+    #             keep_ratio=True)
+    #     ],
+    #         [
+    #             dict(
+    #                 type='Resize',
+    #                 img_scale=[(400, 1333), (500, 1333), (600, 1333)],
+    #                 multiscale_mode='value',
+    #                 keep_ratio=True),
+    #             dict(
+    #                 type='RandomCrop',
+    #                 crop_type='absolute_range',
+    #                 crop_size=(384, 600),
+    #                 allow_negative_crop=True),
+    #             dict(
+    #                 type='Resize',
+    #                 img_scale=[(480, 1333), (512, 1333), (544, 1333),
+    #                            (576, 1333), (608, 1333), (640, 1333),
+    #                            (672, 1333), (704, 1333), (736, 1333),
+    #                            (768, 1333), (800, 1333)],
+    #                 multiscale_mode='value',
+    #                 override=True,
+    #                 keep_ratio=True)
+    #         ]]),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -186,7 +187,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1333, 800),
+        img_scale=[(1333, 1333), (800, 800)],
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -253,7 +254,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-model-eva',
-                              name=f'swin_v1',
+                              name=f'swin_v2',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
