@@ -1,21 +1,31 @@
-num_classes = 8
+num_class = 3
 
+pretrained = 'https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth'  # noqa
+
+fp16 = dict(loss_scale=dict(init_scale=512))
 # model settings
 model = dict(
-    type='MaskRCNN',  # model类型
+    type='MaskRCNN',
     backbone=dict(
-        type='ResNet',  # backbone类型
-        depth=50,
-        num_stages=4,
+        type='SwinTransformer',
+        embed_dims=96,
+        depths=[2, 2, 18, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        patch_norm=True,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch',  # 网络风格：如果设置pytorch，则stride为2的层是conv3x3的卷积层；如果设置caffe，则stride为2的层是第一个conv1x1的卷积层
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+        with_cp=False,
+        convert_weights=True,
+        init_cfg=dict(type='Pretrained', checkpoint=pretrained)),
     neck=dict(
-        type='FPN',  # neck类型
-        in_channels=[256, 512, 1024, 2048], # 输入的各个stage的通道数
+        type='FPN',
+        in_channels=[96, 192, 384, 768],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -46,7 +56,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=num_classes,
+            num_classes=num_class,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -65,7 +75,7 @@ model = dict(
             num_convs=4,
             in_channels=256,
             conv_out_channels=256,
-            num_classes=num_classes,
+            num_classes=num_class,
             loss_mask=dict(
                 type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))),
     # model training and testing settings
@@ -123,31 +133,61 @@ model = dict(
 
 # dataset settings
 dataset_type = 'CocoDataset'
-classes = (
-    'shsy5y', 'a172', 'bt474', 'bv2', 'huh7', 'mcf7', 'skov3', 'skbr3'
-)  # Added
-data_root = '../data/LIVECell_dataset_2021/'  # Modified
-work_dir = f'./work_dirs/MaskrcnnPretrain'
+classes = ('astro', 'cort', 'shsy5y',)  # Added
+data_root = '../data/sartorius_coco_dataset/'  # Modified
+
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+
+# augmentation strategy originates from DETR / Sparse RCNN
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=(800, 800), keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
-    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
-    dict(type='PhotoMetricDistortion',
-         brightness_delta=32, contrast_range=(0.5, 1.5),
-         saturation_range=(0.5, 1.5), hue_delta=18),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),
+    # dict(
+    #     type='AutoAugment',
+    #     policies=[[
+    #         dict(
+    #             type='Resize',
+    #             img_scale=[(480, 1333), (512, 1333), (544, 1333), (576, 1333),
+    #                        (608, 1333), (640, 1333), (672, 1333), (704, 1333),
+    #                        (736, 1333), (768, 1333), (800, 1333)],
+    #             multiscale_mode='value',
+    #             keep_ratio=True)
+    #     ],
+    #         [
+    #             dict(
+    #                 type='Resize',
+    #                 img_scale=[(400, 1333), (500, 1333), (600, 1333)],
+    #                 multiscale_mode='value',
+    #                 keep_ratio=True),
+    #             dict(
+    #                 type='RandomCrop',
+    #                 crop_type='absolute_range',
+    #                 crop_size=(384, 600),
+    #                 allow_negative_crop=True),
+    #             dict(
+    #                 type='Resize',
+    #                 img_scale=[(480, 1333), (512, 1333), (544, 1333),
+    #                            (576, 1333), (608, 1333), (640, 1333),
+    #                            (672, 1333), (704, 1333), (736, 1333),
+    #                            (768, 1333), (800, 1333)],
+    #                 multiscale_mode='value',
+    #                 override=True,
+    #                 keep_ratio=True)
+    #         ]]),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(800, 800),  # (1280, 1280),
+        img_scale=[(1333, 1333), (800, 800)],
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -159,60 +199,68 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,  # BATCH_SIZE
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_live.json',  # Modified
-        img_prefix=data_root + 'images/livecell_train_val_images/',  # Modified
-        classes=classes,  # Added
+        ann_file=data_root + 'annotations_train.json',
+        img_prefix=data_root + 'train/',
+        classes=classes,
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'val_live.json',  # Modified
-        img_prefix=data_root + 'images/livecell_train_val_images/',  # Modified
-        classes=classes,  # Added
+        ann_file=data_root + 'annotations_valid.json',
+        img_prefix=data_root + 'valid/',
+        classes=classes,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'test_live.json',  # Modified
-        img_prefix=data_root + 'images/livecell_test_images/',  # Modified
-        classes=classes,  # Added
+        ann_file=data_root + 'annotations_valid.json',
+        img_prefix=data_root + 'valid/',
+        classes=classes,
         pipeline=test_pipeline))
 evaluation = dict(interval=1,
                   classwise=True,
-                  metric=['bbox', 'segm'],  # bbox, segm
-                  save_best='segm_mAP')
-gpu_ids = (1, 2, 5, 6)
+                  metric=['bbox', 'segm'],
+                  save_best='segm_mAP', )
+
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(
+    type='AdamW',
+    lr=0.0001,
+    betas=(0.9, 0.999),
+    weight_decay=0.05,
+    paramwise_cfg=dict(
+        custom_keys={
+            'absolute_pos_embed': dict(decay_mult=0.),
+            'relative_position_bias_table': dict(decay_mult=0.),
+            'norm': dict(decay_mult=0.)
+        }))
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
     policy='step',
     warmup='linear',
-    warmup_iters=500,
+    warmup_iters=1000,
     warmup_ratio=0.001,
-    step=[8, 11])
+    step=[27, 33])
 runner = dict(type='EpochBasedRunner', max_epochs=20)
 
-# default_runtime
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
-    interval=10,
+    interval=50,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
-             init_kwargs=dict(project='sartorius-pretrain',
-                              name=f'maskrcnn-multi-scale',
+             init_kwargs=dict(project='sartorius-model-eva',
+                              name=f'swin_v2',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
                                       'batch_size': 2,
-                                      'lr': 0.020
                                       },
-                              group='exp_name',
+                              group='swin',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
@@ -221,6 +269,6 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_1x_coco/mask_rcnn_r50_fpn_1x_coco_20200205-d4b0c5d6.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]

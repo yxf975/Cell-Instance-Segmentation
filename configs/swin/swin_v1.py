@@ -244,7 +244,7 @@ lr_config = dict(
     warmup_iters=1000,
     warmup_ratio=0.001,
     step=[27, 33])
-runner = dict(type='EpochBasedRunner', max_epochs=12)
+runner = dict(type='EpochBasedRunner', max_epochs=20)
 
 checkpoint_config = dict(interval=1)
 # yapf:disable
@@ -254,7 +254,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-model-eva',
-                              name=f'swin_v2',
+                              name=f'swin_v1',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
