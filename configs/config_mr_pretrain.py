@@ -133,7 +133,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=(1333, 1333), keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
+    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
     dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
     dict(type='PhotoMetricDistortion',
          brightness_delta=32, contrast_range=(0.5, 1.5),
@@ -147,7 +147,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1333, 1333),  # (1280, 1280),
+        img_scale=[(1333, 1333), (800, 800)],  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -159,8 +159,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,  # BATCH_SIZE
-    workers_per_gpu=2,
+    samples_per_gpu=1,  # BATCH_SIZE
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'train_live.json',  # Modified
