@@ -133,7 +133,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
+    dict(type='Resize', img_scale=(1333, 1333), keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
     dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
     dict(type='PhotoMetricDistortion',
          brightness_delta=32, contrast_range=(0.5, 1.5),
@@ -147,7 +147,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=[(1333, 1333), (800, 800)],  # (1280, 1280),
+        img_scale=(1333, 1333),  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
@@ -183,7 +183,7 @@ evaluation = dict(interval=1,
                   classwise=True,
                   metric=['bbox', 'segm'],  # bbox, segm
                   save_best='segm_mAP')
-gpu_ids = range(5, 6)
+gpu_ids = (1, 2, 5, 6)
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
