@@ -179,7 +179,7 @@ data = dict(
         img_prefix=data_root + 'images/livecell_test_images/',  # Modified
         classes=classes,  # Added
         pipeline=test_pipeline))
-evaluation = dict(interval=1,
+evaluation = dict(interval=2,
                   classwise=True,
                   metric=['bbox', 'segm'],  # bbox, segm
                   save_best='segm_mAP')
@@ -194,7 +194,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=15)
+runner = dict(type='EpochBasedRunner', max_epochs=30)
 
 # default_runtime
 checkpoint_config = dict(interval=1)
