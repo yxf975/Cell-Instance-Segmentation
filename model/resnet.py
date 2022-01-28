@@ -177,7 +177,7 @@ class MyBottleneck(nn.Module):
             downsample: Optional[nn.Module] = None,
             groups: int = 1,
             base_width: int = 64,
-            dilation: [int, int, int] = [1, 1, 1],
+            dilation: [int, int, int] = [12, 24, 36],
             norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
