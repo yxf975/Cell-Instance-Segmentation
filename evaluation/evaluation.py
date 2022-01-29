@@ -1,5 +1,5 @@
+import sys
 import numpy as np
-# import os
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
 import mmcv
@@ -8,11 +8,13 @@ from mmdet.apis import inference_detector, init_detector, show_result_pyplot
 from mmcv import Config
 from pycocotools.coco import COCO
 import cupy as cp
+import argparse
 
 WIDTH = 704
 HEIGHT = 520
-confidence_thresholds = {0: 0.25, 1: 0.55, 2: 0.35}
+confidence_thresholds = {0: 0.35, 1: 0.55, 2: 0.7}
 pixel_thresholds = {0: 75, 1: 150, 2: 75}
+cell_type = ['shsy5y', 'astro', 'cort']
 
 
 def does_overlap(mask, other_masks):
@@ -194,15 +196,26 @@ def iou_map(truths, preds, verbose=0):
 
 
 if __name__ == "__main__":
-    cfg = Config.fromfile('../configs/config_aug_exp.py')
+    # parse para
+    parser = argparse.ArgumentParser(description='evaluation of a detector')
+    parser.add_argument('config', help='train config file path')
+    parser.add_argument('model', help='trained model path')
+    args = parser.parse_args()
+    print(args.config)
+    print(args.model)
+
+
+    # cfg = Config.fromfile('../configs/config_aug_exp.py')
+    cfg = Config.fromfile(args.config)
     print(f'Config:\n{cfg.pretty_text}')
-    ckpt = '../../model/best_segm_mAP_epoch_14.pth'
+    ckpt = args.model
     device = 'cuda:0'
     model = init_detector(config=cfg, checkpoint=ckpt, device=device)
-    annfile = '../../data/sartorius_coco_dataset/annotations_test.json'
-    testdir = '../../data/sartorius_coco_dataset/test/'
+    annfile = '../data/sartorius_coco_dataset/annotations_test.json'
+    testdir = '../data/sartorius_coco_dataset/test/'
     coco = COCO(annfile)
     scores = [[], [], []]
+    print("---------------------evaluation-------------------------")
     for imgid, imgInfo in coco.imgs.items():
         imgPath = testdir + imgInfo['file_name']
         annIds = coco.getAnnIds(imgIds=[imgid])
@@ -241,7 +254,14 @@ if __name__ == "__main__":
         print("------------------.\n")
         print(pred)
         scores[cat - 1].append(iou_map(ann_mask, pred))
-    for i in range(scores)
+        break
+    total, cnt = 0, 0
+    for i in range(3):
+        total += sum(scores[i])
+        cnt += len(scores[i])
+        print("mAP for class {} :".format(cell_type[i]), np.mean(scores[i]))
+    print("mAP for all:", total/cnt)
+
 
 
     # -----------------------infer情况----------------------------
