@@ -58,7 +58,7 @@ def annotate(idx, row, cat_ids):
 
 def coco_structure(df, workers=4):
     # Building the header
-    cat_ids = {"astro": 1, "cort": 2, "shsy5y": 3}
+    cat_ids = {'shsy5y': 1, "astro": 2, "cort": 3}
     cats = [{'name': name, 'id': id} for name, id in cat_ids.items()]
     images = [{'id': id, 'width': row.width, 'height': row.height, 'file_name': f'{id}.png'} \
               for id, row in df.groupby('id').agg('first').iterrows()]

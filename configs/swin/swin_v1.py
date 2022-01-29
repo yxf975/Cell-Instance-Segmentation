@@ -133,7 +133,7 @@ model = dict(
 
 # dataset settings
 dataset_type = 'CocoDataset'
-classes = ('astro', 'cort', 'shsy5y',)  # Added
+classes = ('shsy5y', 'astro', 'cort') # Added
 data_root = '../data/sartorius_coco_dataset/'  # Modified
 
 img_norm_cfg = dict(

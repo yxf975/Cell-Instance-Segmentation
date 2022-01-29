@@ -1,14 +1,16 @@
 import numpy as np
-import os
+# import os
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
 import mmcv
 import cv2
 from mmdet.apis import inference_detector, init_detector, show_result_pyplot
 from mmcv import Config
+from pycocotools.coco import COCO
+import cupy as cp
 
-IMG_WIDTH = 704
-IMG_HEIGHT = 520
+WIDTH = 704
+HEIGHT = 520
 confidence_thresholds = {0: 0.25, 1: 0.55, 2: 0.35}
 pixel_thresholds = {0: 75, 1: 150, 2: 75}
 
@@ -35,14 +37,14 @@ def get_mask_from_result(result):
     #     print(mk.shape)
     return mk
 
-
-def get_img_and_mask(img_path, annotation, width, height):
-    """ Capture the relevant image array as well as the image mask """
-    img_mask = np.zeros((height, width), dtype=np.uint8)
-    for i, annot in enumerate(annotation):
-        img_mask = np.where(rle_decode(annot, (height, width)) != 0, i, img_mask)
-    img = cv2.imread(img_path)[..., ::-1]
-    return img[..., 0], img_mask
+#
+# def get_img_and_mask(img_path, annotation, width, height):
+#     """ Capture the relevant image array as well as the image mask """
+#     img_mask = np.zeros((height, width), dtype=np.uint8)
+#     for i, annot in enumerate(annotation):
+#         img_mask = np.where(rle_decode(annot, (height, width)) != 0, i, img_mask)
+#     img = cv2.imread(img_path)[..., ::-1]
+#     return img[..., 0], img_mask
 
 
 def plot_img_and_mask(img, mask, invert_img=True, boost_contrast=True):
@@ -192,32 +194,54 @@ def iou_map(truths, preds, verbose=0):
 
 
 if __name__ == "__main__":
-    cfg = Config.fromfile('./config_aug_exp.py')
+    cfg = Config.fromfile('../configs/config_aug_exp.py')
     print(f'Config:\n{cfg.pretty_text}')
-    ckpt = '../model/best_segm_mAP_epoch_14.pth'
+    ckpt = '../../model/best_segm_mAP_epoch_14.pth'
     device = 'cuda:0'
     model = init_detector(config=cfg, checkpoint=ckpt, device=device)
-    annfile = "../data/sartorius_coco_dataset"
-
-    for file in sorted(os.listdir('../data/test')):
-        img = mmcv.imread('../data/test/' + file)
+    annfile = '../../data/sartorius_coco_dataset/annotations_test.json'
+    testdir = '../../data/sartorius_coco_dataset/test/'
+    coco = COCO(annfile)
+    scores = [[], [], []]
+    for imgid, imgInfo in coco.imgs.items():
+        imgPath = testdir + imgInfo['file_name']
+        annIds = coco.getAnnIds(imgIds=[imgid])
+        anns = coco.loadAnns(annIds)
+        cat = anns[0]['category_id']
+        ann_mask = np.zeros((HEIGHT, WIDTH))
+        for ann in anns:
+            ann_mask = np.logical_or(ann_mask, coco.annToMask(ann))
+        img = mmcv.imread(imgPath)
         result = inference_detector(model, img)
+        model.eval()
         show_result_pyplot(model, img, result)
-        previous_masks = []
+        pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
+        pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))
+        if cat != pred_class:
+            print("big big error-------------big big error-----------------big big error------")
+            print("big big error-------------big big error-----------------big big error------")
+            print("big big error-------------big big error-----------------big big error------")
+        pred_mask = []
+        pred = np.zeros((HEIGHT, WIDTH))
         for i, classe in enumerate(result[0]):
             if classe.shape != (0, 5):
                 bbs = classe
                 sgs = result[1][i]
                 for bb, sg in zip(bbs, sgs):
-                    #                 print(sg)
                     box = bb[:4]
                     cnf = bb[4]
                     count = np.count_nonzero(sg)
                     if cnf >= confidence_thresholds[i] and count >= pixel_thresholds[i]:
                         #                 if cnf >= confidence_thresholds[i]:
                         mask = get_mask_from_result(sg)
-                        mask = remove_overlapping_pixels(mask, previous_masks)
-                        previous_masks.append(mask)
+                        mask = remove_overlapping_pixels(mask, pred_mask)
+                        pred = np.logical_or(cp.asnumpy(mask), pred)
+                        pred_mask.append(mask)
+        print(ann_mask)
+        print("------------------.\n")
+        print(pred)
+        scores[cat - 1].append(iou_map(ann_mask, pred))
+    for i in range(scores)
 
 
     # -----------------------infer情况----------------------------
