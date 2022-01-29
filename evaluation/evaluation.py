@@ -216,5 +216,3 @@ if __name__ == "__main__":
                         mask = get_mask_from_result(sg)
                         mask = remove_overlapping_pixels(mask, previous_masks)
                         previous_masks.append(mask)
-
-    # evaluation
