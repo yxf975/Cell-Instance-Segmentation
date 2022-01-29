@@ -216,8 +216,8 @@ model = dict(
             max_per_img=100,
             mask_thr_binary=0.5)))
 dataset_type = 'CocoDataset'
-data_root = '../data/'
-classes = ['shsy5y', 'astro', 'cort']
+data_root = '../data/sartorius_coco_dataset/'
+classes = ('astro', 'cort', 'shsy5y',)
 
 albu_train_transforms = [
     dict(type='VerticalFlip', p=0.5),
@@ -256,9 +256,9 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=[(1333, 1333), (800, 800)],
+        img_scale=[(1333, 1333), (1024, 1024), (800, 800)],
         flip=True,
-        flip_direction=["horizontal","vertical"],
+        flip_direction=["horizontal", "vertical"],
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
@@ -270,27 +270,25 @@ test_pipeline = [
 ]
 holdout = 0
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=2,
     workers_per_gpu=2,
-    train=[dict(
+    train=dict(
             classes=classes,
-            # type="DownSampleCocoDataset",
             type=dataset_type,
-            # downsample=2,
-            ann_file=data_root + f'train_tiny/annotations/fold_{fold}.json',
-            img_prefix=data_root + 'train_tiny/images/',
-            pipeline=train_pipeline) for fold in range(5) if fold != holdout],
+            ann_file=data_root + f'annotations_train.json',
+            img_prefix=data_root + 'train/',
+            pipeline=train_pipeline),
     val=dict(
             classes=classes,
             type=dataset_type,
-            ann_file=data_root + f'train_tiny/annotations/fold_{holdout}.json',
-            img_prefix=data_root + 'train_tiny/images/',
+            ann_file=data_root + f'annotations_valid.json',
+            img_prefix=data_root + 'valid/',
             pipeline=test_pipeline),
     test=dict(
             classes=classes,
             type=dataset_type,
-            ann_file=data_root + f'train_tiny/annotations/fold_{holdout}.json',
-            img_prefix=data_root + 'train_tiny/images/',
+            ann_file=data_root + f'annotations_test.json',
+            img_prefix=data_root + 'test/',
             pipeline=test_pipeline)
 )
 
@@ -315,25 +313,25 @@ total_epochs = 12 * nx
 runner = dict(type='EpochBasedRunner', max_epochs=total_epochs)
 checkpoint_config = dict(interval=total_epochs, save_optimizer=False)
 log_config = dict(
-    interval=50,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
-             init_kwargs=dict(project='sartorius-5-fold',
-                              name=f'model-htc-v2',
+             init_kwargs=dict(project='sartorius-model-eva',
+                              name=f'htc-scratch',
                               config={'config': 'htc_r101_fpn_20e_coco',
                                       'exp_name': 'htc-test',
                                       'comment': 'baseline',
                                       'batch_size': 4,
                                       'lr': 0.020
                                       },
-                              group='exp_name',
+                              group='htc',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_r101_fpn_20e_coco/htc_r101_fpn_20e_coco_20200317-9b41b48f.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
