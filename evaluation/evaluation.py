@@ -197,6 +197,8 @@ if __name__ == "__main__":
     ckpt = '../model/best_segm_mAP_epoch_14.pth'
     device = 'cuda:0'
     model = init_detector(config=cfg, checkpoint=ckpt, device=device)
+    annfile = "../data/sartorius_coco_dataset"
+
     for file in sorted(os.listdir('../data/test')):
         img = mmcv.imread('../data/test/' + file)
         result = inference_detector(model, img)
@@ -216,3 +218,26 @@ if __name__ == "__main__":
                         mask = get_mask_from_result(sg)
                         mask = remove_overlapping_pixels(mask, previous_masks)
                         previous_masks.append(mask)
+
+
+    # -----------------------infer情况----------------------------
+
+    # for file in sorted(os.listdir('../data/test')):
+    #     img = mmcv.imread('../data/test/' + file)
+    #     result = inference_detector(model, img)
+    #     show_result_pyplot(model, img, result)
+    #     previous_masks = []
+    #     for i, classe in enumerate(result[0]):
+    #         if classe.shape != (0, 5):
+    #             bbs = classe
+    #             sgs = result[1][i]
+    #             for bb, sg in zip(bbs, sgs):
+    #                 #                 print(sg)
+    #                 box = bb[:4]
+    #                 cnf = bb[4]
+    #                 count = np.count_nonzero(sg)
+    #                 if cnf >= confidence_thresholds[i] and count >= pixel_thresholds[i]:
+    #                     #                 if cnf >= confidence_thresholds[i]:
+    #                     mask = get_mask_from_result(sg)
+    #                     mask = remove_overlapping_pixels(mask, previous_masks)
+    #                     previous_masks.append(mask)
