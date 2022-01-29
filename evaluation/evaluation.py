@@ -215,6 +215,7 @@ if __name__ == "__main__":
     testdir = '../data/sartorius_coco_dataset/test/'
     coco = COCO(annfile)
     print(coco.cats)
+    misscls_cnt = 0
     scores = [[], [], []]
     print("---------------------evaluation-------------------------")
     for imgid, imgInfo in coco.imgs.items():
@@ -233,6 +234,7 @@ if __name__ == "__main__":
         pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))+1
         print(cat, pred_class)
         if cat != pred_class:
+            misscls_cnt += 1
             print("big big error-------------big big error-----------------big big error------")
             print("big big error-------------big big error-----------------big big error------")
             print("big big error-------------big big error-----------------big big error------")
@@ -254,6 +256,7 @@ if __name__ == "__main__":
                         pred_mask.append(mask)
         scores[cat - 1].append(iou_map(ann_mask, pred))
     total, cnt = 0, 0
+    print("The number of misclassification cases:", misscls_cnt)
     for i in range(3):
         total += sum(scores[i])
         cnt += len(scores[i])
