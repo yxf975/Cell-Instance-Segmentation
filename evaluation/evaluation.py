@@ -254,7 +254,6 @@ if __name__ == "__main__":
         print("------------------.\n")
         print(pred)
         scores[cat - 1].append(iou_map(ann_mask, pred))
-        break
     total, cnt = 0, 0
     for i in range(3):
         total += sum(scores[i])
