@@ -214,6 +214,7 @@ if __name__ == "__main__":
     annfile = '../data/sartorius_coco_dataset/annotations_test.json'
     testdir = '../data/sartorius_coco_dataset/test/'
     coco = COCO(annfile)
+    print(coco.cats)
     scores = [[], [], []]
     print("---------------------evaluation-------------------------")
     for imgid, imgInfo in coco.imgs.items():
@@ -229,7 +230,8 @@ if __name__ == "__main__":
         model.eval()
         show_result_pyplot(model, img, result)
         pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
-        pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))
+        pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))+1
+        print(cat, pred_class)
         if cat != pred_class:
             print("big big error-------------big big error-----------------big big error------")
             print("big big error-------------big big error-----------------big big error------")
@@ -250,9 +252,6 @@ if __name__ == "__main__":
                         mask = remove_overlapping_pixels(mask, pred_mask)
                         pred = np.logical_or(cp.asnumpy(mask), pred)
                         pred_mask.append(mask)
-        print(ann_mask)
-        print("------------------.\n")
-        print(pred)
         scores[cat - 1].append(iou_map(ann_mask, pred))
     total, cnt = 0, 0
     for i in range(3):
