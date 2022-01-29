@@ -216,7 +216,7 @@ model = dict(
             max_per_img=100,
             mask_thr_binary=0.5)))
 dataset_type = 'CocoDataset'
-data_root = '../data/'
+data_root = 'data/cell/'
 classes = ['shsy5y', 'astro', 'cort']
 
 albu_train_transforms = [
@@ -250,7 +250,7 @@ train_pipeline = [
          update_pad_shape=False,
          skip_img_without_anno=True),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),    # Pipeline that decides which keys in the data should be passed to the detector
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -258,7 +258,7 @@ test_pipeline = [
         type='MultiScaleFlipAug',
         img_scale=[(1333, 1333), (1024, 1024), (800, 800)],
         flip=True,
-        flip_direction=["horizontal", "vertical"],
+        flip_direction=["horizontal","vertical"],
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
@@ -270,13 +270,12 @@ test_pipeline = [
 ]
 holdout = 0
 data = dict(
-    samples_per_gpu=8,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=[dict(
             classes=classes,
-            # type="DownSampleCocoDataset",
-            type=dataset_type,
-            # downsample=2,
+            type="DownSampleCocoDataset",
+            downsample=2,
             ann_file=data_root + f'train_tiny/annotations/fold_{fold}.json',
             img_prefix=data_root + 'train_tiny/images/',
             pipeline=train_pipeline) for fold in range(5) if fold != holdout],
@@ -295,12 +294,11 @@ data = dict(
 )
 
 nx = 1
-work_dir = f'./work_dirs/htcr2101_{nx}x_2rpn_d2_800_f0'
+work_dir = f'./work_dirs/cell/htcr2101_{nx}x_2rpn_d2_800_f0'
 evaluation = dict(
     classwise=True,
-    interval=1,
+    interval=12,
     metric=['bbox', 'segm'],
-    save_best='segm_mAP',
     jsonfile_prefix=f"{work_dir}/valid")
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -314,30 +312,14 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 total_epochs = 12 * nx
 runner = dict(type='EpochBasedRunner', max_epochs=total_epochs)
 checkpoint_config = dict(interval=total_epochs, save_optimizer=False)
-log_config = dict(
-    interval=50,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        dict(type='WandbLoggerHook',  # wandb logger
-             init_kwargs=dict(project='sartorius-5-fold',
-                              name=f'model-htc-v2',
-                              config={'config': 'htc_r101_fpn_20e_coco',
-                                      'exp_name': 'htc-test',
-                                      'comment': 'baseline',
-                                      'batch_size': 4,
-                                      'lr': 0.020
-                                      },
-                              group='exp_name',
-                              entity=None))
-        # dict(type='TensorboardLoggerHook')
-    ])
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_r101_fpn_20e_coco/htc_r101_fpn_20e_coco_20200317-9b41b48f.pth'
+load_from = './weights/htc_r2_101_fpn_20e_coco-3a8d2112.pth'
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
-# gpu_ids = (2, 3)
+gpu_ids=(2,3)
 
 
 only_swa_training = False
