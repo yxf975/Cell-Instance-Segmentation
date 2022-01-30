@@ -34,7 +34,7 @@ model = dict(
         feat_channels=256,
         anchor_generator=dict(
             type='AnchorGenerator',
-            scales=[8, 16, 32, 64],
+            scales=[8, 16, 32],
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
@@ -202,8 +202,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=1,  # BATCH_SIZE
-    workers_per_gpu=1,
+    samples_per_gpu=2,  # BATCH_SIZE
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'train_live.json',  # Modified
