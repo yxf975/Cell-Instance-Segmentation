@@ -37,6 +37,8 @@ def to_multiclass(ann_file):
         subdir = filename.split('_')[0]
         img_info['file_name'] = os.path.join(subdir, filename)
         cat = subdir.lower()
+        if cat != "shsy5y":
+            continue
 
         img_infos.append(img_info)
         for ann_info in coco.loadAnns(coco.getAnnIds(_id)):
@@ -57,13 +59,13 @@ def to_multiclass(ann_file):
 if __name__ == '__main__':
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_train.json'),
-        '../../data/LIVECell_dataset_2021/train_live.json'
+        '../../data/LIVECell_dataset_2021/train_shsy5y.json'
     )
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_val.json'),
-        '../../data/LIVECell_dataset_2021/val_live.json'
+        '../../data/LIVECell_dataset_2021/val_shsy5y.json'
     )
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_test.json'),
-        '../../data/LIVECell_dataset_2021/test_live.json'
+        '../../data/LIVECell_dataset_2021/test_shsy5y.json'
     )
