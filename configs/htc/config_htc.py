@@ -4,17 +4,18 @@ num_classes = 3
 model = dict(
     type='HybridTaskCascade',
     backbone=dict(
-        type='Res2Net',
+        type='ResNeXt',
         depth=101,
-        scales=4,
-        base_width=26,
+        groups=64,
+        base_width=4,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
         style='pytorch',
-        init_cfg=dict()),
+        init_cfg=dict(
+            type='Pretrained', checkpoint='open-mmlab://resnext101_64x4d')),
     neck=dict(
         type='FPN',
         in_channels=[256, 512, 1024, 2048],
@@ -216,8 +217,8 @@ model = dict(
             max_per_img=100,
             mask_thr_binary=0.5)))
 dataset_type = 'CocoDataset'
-data_root = '../data/sartorius_coco_dataset/'
-classes = ('astro', 'cort', 'shsy5y',)
+classes = ('shsy5y', 'astro', 'cort')  # Added
+data_root = '../data/sartorius_coco_dataset/'  # Modified
 
 albu_train_transforms = [
     dict(type='VerticalFlip', p=0.5),
@@ -250,13 +251,14 @@ train_pipeline = [
          update_pad_shape=False,
          skip_img_without_anno=True),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),    # Pipeline that decides which keys in the data should be passed to the detector
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels']),
+    # Pipeline that decides which keys in the data should be passed to the detector
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=[(1333, 1333), (1024, 1024), (800, 800)],
+        img_scale=[(1333, 1333), (800, 800)],
         flip=True,
         flip_direction=["horizontal", "vertical"],
         transforms=[
@@ -268,32 +270,31 @@ test_pipeline = [
             dict(type='Collect', keys=['img']),
         ])
 ]
-holdout = 0
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
-            classes=classes,
-            type=dataset_type,
-            ann_file=data_root + f'annotations_train.json',
-            img_prefix=data_root + 'train/',
-            pipeline=train_pipeline),
+        classes=classes,
+        type=dataset_type,
+        ann_file=data_root + f'annotations_train.json',
+        img_prefix=data_root + 'train/',
+        pipeline=train_pipeline),
     val=dict(
-            classes=classes,
-            type=dataset_type,
-            ann_file=data_root + f'annotations_valid.json',
-            img_prefix=data_root + 'valid/',
-            pipeline=test_pipeline),
+        classes=classes,
+        type=dataset_type,
+        ann_file=data_root + f'annotations_valid.json',
+        img_prefix=data_root + 'valid/',
+        pipeline=test_pipeline),
     test=dict(
-            classes=classes,
-            type=dataset_type,
-            ann_file=data_root + f'annotations_test.json',
-            img_prefix=data_root + 'test/',
-            pipeline=test_pipeline)
+        classes=classes,
+        type=dataset_type,
+        ann_file=data_root + f'annotations_test.json',
+        img_prefix=data_root + 'test/',
+        pipeline=test_pipeline)
 )
 
 nx = 1
-work_dir = f'./work_dirs/htcr2101_{nx}x_2rpn_d2_800_f0'
+work_dir = f'./work_dirs/htc'
 evaluation = dict(
     classwise=True,
     interval=1,
@@ -306,10 +307,10 @@ lr_config = dict(
     policy='step',
     warmup='linear',
     warmup_iters=500,
-    warmup_ratio=1/3,
+    warmup_ratio=1 / 3,
     step=[8 * nx, 11 * nx])
 custom_hooks = [dict(type='NumClassCheckHook')]
-total_epochs = 12 * nx
+total_epochs = 20
 runner = dict(type='EpochBasedRunner', max_epochs=total_epochs)
 checkpoint_config = dict(interval=total_epochs, save_optimizer=False)
 log_config = dict(
@@ -331,7 +332,8 @@ log_config = dict(
     ])
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_r101_fpn_20e_coco/htc_r101_fpn_20e_coco_20200317-9b41b48f.pth'
+
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/htc/htc_x101_64x4d_fpn_16x1_20e_coco/htc_x101_64x4d_fpn_16x1_20e_coco_20200318-b181fd7a.pth'
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
