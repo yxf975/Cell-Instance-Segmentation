@@ -158,8 +158,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,  # BATCH_SIZE
-    workers_per_gpu=2,
+    samples_per_gpu=1,  # BATCH_SIZE
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations_train.json',  # Modified
