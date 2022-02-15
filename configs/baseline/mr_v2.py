@@ -24,7 +24,7 @@ model = dict(
         feat_channels=256,
         anchor_generator=dict(
             type='AnchorGenerator',
-            scales=[8, 16, 32],
+            scales=[8],
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
@@ -127,34 +127,72 @@ classes = ('shsy5y', 'astro', 'cort')  # Added
 data_root = '../data/sartorius_coco_dataset/'  # Modified
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=[(1333, 1333), (800, 800)], keep_ratio=True),  # Augmentation pipeline that resize the images and their annotations
-    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),  # Augmentation pipeline that flip the images and their annotations
-    dict(type='PhotoMetricDistortion',
-         brightness_delta=32, contrast_range=(0.5, 1.5),
-         saturation_range=(0.5, 1.5), hue_delta=18),
-    dict(type='Normalize', **img_norm_cfg),
+    dict(type='Resize', img_scale=[(1333, 800), (1690, 960)]),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Albu',
+        transforms=[
+            dict(
+                type='ShiftScaleRotate',
+                shift_limit=0.0625,
+                scale_limit=0.15,
+                rotate_limit=15,
+                p=0.4),
+            dict(
+                type='RandomBrightnessContrast',
+                brightness_limit=0.2,
+                contrast_limit=0.2,
+                p=0.5),
+            dict(
+                type='OneOf',
+                transforms=[
+                    dict(type='GaussianBlur', p=1.0, blur_limit=7),
+                    dict(type='MedianBlur', p=1.0, blur_limit=7)
+                ],
+                p=0.4)
+        ],
+        bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_labels'],
+            min_visibility=0.0,
+            filter_lost_elements=True),
+        keymap=dict(img='image', gt_bboxes='bboxes', gt_masks='masks'),
+        update_pad_shape=False,
+        skip_img_without_anno=True),
+    dict(
+        type='Normalize',
+        mean=[128, 128, 128],
+        std=[11.58, 11.58, 11.58],
+        to_rgb=True),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels'])
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=[(1333, 1333), (800, 800)],  # (1280, 1280),
+        img_scale=[(1333, 800), (1690, 960)],
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
+            dict(
+                type='Normalize',
+                mean=[128, 128, 128],
+                std=[11.58, 11.58, 11.58],
+                to_rgb=True),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
+            dict(type='Collect', keys=['img'])
         ])
 ]
+
 data = dict(
     samples_per_gpu=4,  # BATCH_SIZE
     workers_per_gpu=2,
@@ -218,6 +256,7 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = None
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco' \
+            '/mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth '
 resume_from = None
 workflow = [('train', 1)]
