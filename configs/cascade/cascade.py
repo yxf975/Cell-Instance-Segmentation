@@ -61,7 +61,7 @@ model = dict(
                     use_sigmoid=False,
                     loss_weight=1.0),
                 loss_bbox=dict(type='SmoothL1Loss', beta=1.0,
-                               loss_weight=1.0)),
+                               loss_weight=1.5)),
             dict(
                 type='Shared2FCBBoxHead',
                 in_channels=256,
@@ -78,7 +78,7 @@ model = dict(
                     use_sigmoid=False,
                     loss_weight=1.0),
                 loss_bbox=dict(type='SmoothL1Loss', beta=1.0,
-                               loss_weight=1.0)),
+                               loss_weight=1.5)),
             dict(
                 type='Shared2FCBBoxHead',
                 in_channels=256,
@@ -94,7 +94,7 @@ model = dict(
                     type='CrossEntropyLoss',
                     use_sigmoid=False,
                     loss_weight=1.0),
-                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
+                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.5))
         ],
         mask_roi_extractor=dict(
             type='SingleRoIExtractor',
@@ -269,7 +269,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,  # BATCH_SIZE
+    samples_per_gpu=4,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -303,7 +303,7 @@ lr_config = dict(
     warmup_iters=125,
     warmup_ratio=0.001,
     min_lr=1e-07)
-runner = dict(type='EpochBasedRunner', max_epochs=12)
+runner = dict(type='EpochBasedRunner', max_epochs=30)
 checkpoint_config = dict(interval=1)
 log_config = dict(
     interval=10,
