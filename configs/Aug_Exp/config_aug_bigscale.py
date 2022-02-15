@@ -129,7 +129,7 @@ data_root = '../data/sartorius_coco_dataset/'  # Modified
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile',  to_float32=True),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='Mosaic', img_scale=img_scale, pad_val=114.0),
     dict(
@@ -158,8 +158,6 @@ train_pipeline = [
         pad_val=dict(img=(114.0, 114.0, 114.0))
     ),
     dict(type='FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
-
-
     dict(type='Normalize', **img_norm_cfg),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),

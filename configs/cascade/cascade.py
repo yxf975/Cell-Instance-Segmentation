@@ -1,7 +1,7 @@
 model = dict(
     type='CascadeRCNN',
     backbone=dict(
-        type='ResNet',
+        type='ResNeXt',
         depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
@@ -9,7 +9,10 @@ model = dict(
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
         style='pytorch',
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet101')),
+        init_cfg=dict(
+            type='Pretrained', checkpoint='open-mmlab://resnext101_64x4d'),
+        groups=64,
+        base_width=4),
     neck=dict(
         type='FPN',
         in_channels=[256, 512, 1024, 2048],
@@ -23,14 +26,15 @@ model = dict(
             type='AnchorGenerator',
             scales=[8],
             ratios=[0.5, 1.0, 2.0],
-            strides=[2, 4, 8, 16, 32, 64]),
+            strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
-            target_means=[.0, .0, .0, .0],
+            target_means=[0.0, 0.0, 0.0, 0.0],
             target_stds=[1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),
+        loss_bbox=dict(
+            type='SmoothL1Loss', beta=0.1111111111111111, loss_weight=1.0)),
     roi_head=dict(
         type='CascadeRoIHead',
         num_stages=3,
@@ -39,17 +43,17 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[2, 4, 8, 16, 32]),
+            featmap_strides=[4, 8, 16, 32]),
         bbox_head=[
             dict(
                 type='Shared2FCBBoxHead',
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=80,
+                num_classes=3,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
-                    target_means=[0., 0., 0., 0.],
+                    target_means=[0.0, 0.0, 0.0, 0.0],
                     target_stds=[0.1, 0.1, 0.2, 0.2]),
                 reg_class_agnostic=True,
                 loss_cls=dict(
@@ -63,10 +67,10 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=80,
+                num_classes=3,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
-                    target_means=[0., 0., 0., 0.],
+                    target_means=[0.0, 0.0, 0.0, 0.0],
                     target_stds=[0.05, 0.05, 0.1, 0.1]),
                 reg_class_agnostic=True,
                 loss_cls=dict(
@@ -80,10 +84,10 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=80,
+                num_classes=3,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
-                    target_means=[0., 0., 0., 0.],
+                    target_means=[0.0, 0.0, 0.0, 0.0],
                     target_stds=[0.033, 0.033, 0.067, 0.067]),
                 reg_class_agnostic=True,
                 loss_cls=dict(
@@ -102,10 +106,9 @@ model = dict(
             num_convs=4,
             in_channels=256,
             conv_out_channels=256,
-            num_classes=80,
+            num_classes=3,
             loss_mask=dict(
                 type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))),
-    # model training and testing settings
     train_cfg=dict(
         rpn=dict(
             assigner=dict(
@@ -117,7 +120,7 @@ model = dict(
                 ignore_iof_thr=-1),
             sampler=dict(
                 type='RandomSampler',
-                num=256,
+                num=1024,
                 pos_fraction=0.5,
                 neg_pos_ub=-1,
                 add_gt_as_proposals=False),
@@ -128,7 +131,8 @@ model = dict(
             nms_pre=2000,
             max_per_img=2000,
             nms=dict(type='nms', iou_threshold=0.7),
-            min_bbox_size=0),
+            min_bbox_size=0,
+            nms_post=2000),
         rcnn=[
             dict(
                 assigner=dict(
@@ -140,7 +144,7 @@ model = dict(
                     ignore_iof_thr=-1),
                 sampler=dict(
                     type='RandomSampler',
-                    num=512,
+                    num=3072,
                     pos_fraction=0.25,
                     neg_pos_ub=-1,
                     add_gt_as_proposals=True),
@@ -157,7 +161,7 @@ model = dict(
                     ignore_iof_thr=-1),
                 sampler=dict(
                     type='RandomSampler',
-                    num=512,
+                    num=3072,
                     pos_fraction=0.25,
                     neg_pos_ub=-1,
                     add_gt_as_proposals=True),
@@ -174,7 +178,7 @@ model = dict(
                     ignore_iof_thr=-1),
                 sampler=dict(
                     type='RandomSampler',
-                    num=512,
+                    num=3072,
                     pos_fraction=0.25,
                     neg_pos_ub=-1,
                     add_gt_as_proposals=True),
@@ -184,107 +188,147 @@ model = dict(
         ]),
     test_cfg=dict(
         rpn=dict(
-            nms_pre=1000,
+            nms_pre=3000,
             max_per_img=1000,
             nms=dict(type='nms', iou_threshold=0.7),
-            min_bbox_size=0),
+            min_bbox_size=0,
+            nms_post=3000),
         rcnn=dict(
             score_thr=0.05,
             nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100,
+            max_per_img=400,
             mask_thr_binary=0.5)))
-
-_base_ = '../_base_/default_runtime.py'
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = 'data/coco/'
+classes = ('shsy5y', 'astro', 'cort')  # Added
+data_root = '../data/sartorius_coco_dataset/'  # Modified
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-
-# In mstrain 3x config, img_scale=[(1333, 640), (1333, 800)],
-# multiscale_mode='range'
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(
-        type='Resize',
-        img_scale=[(1333, 640), (1333, 800)],
-        multiscale_mode='range',
-        keep_ratio=True),
+    dict(type='Resize', img_scale=[(1333, 800), (1690, 960)]),
     dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='Normalize', **img_norm_cfg),
+    dict(
+        type='Albu',
+        transforms=[
+            dict(
+                type='ShiftScaleRotate',
+                shift_limit=0.0625,
+                scale_limit=0.15,
+                rotate_limit=15,
+                p=0.4),
+            dict(
+                type='RandomBrightnessContrast',
+                brightness_limit=0.2,
+                contrast_limit=0.2,
+                p=0.5),
+            dict(
+                type='OneOf',
+                transforms=[
+                    dict(type='GaussianBlur', p=1.0, blur_limit=7),
+                    dict(type='MedianBlur', p=1.0, blur_limit=7)
+                ],
+                p=0.4)
+        ],
+        bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_labels'],
+            min_visibility=0.0,
+            filter_lost_elements=True),
+        keymap=dict(img='image', gt_bboxes='bboxes', gt_masks='masks'),
+        update_pad_shape=False,
+        skip_img_without_anno=True),
+    dict(
+        type='Normalize',
+        mean=[128, 128, 128],
+        std=[11.58, 11.58, 11.58],
+        to_rgb=True),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_masks', 'gt_labels'])
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1333, 800),
+        img_scale=[(1333, 800), (1690, 960)],
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
+            dict(
+                type='Normalize',
+                mean=[128, 128, 128],
+                std=[11.58, 11.58, 11.58],
+                to_rgb=True),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
+            dict(type='Collect', keys=['img'])
         ])
 ]
-
-# Use RepeatDataset to speed up training
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=2,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
-        type='RepeatDataset',
-        times=3,
-        dataset=dict(
-            type=dataset_type,
-            ann_file=data_root + 'annotations/instances_train2017.json',
-            img_prefix=data_root + 'train2017/',
-            pipeline=train_pipeline)),
+        type=dataset_type,
+        ann_file=data_root + 'annotations_train.json',  # Modified
+        img_prefix=data_root + 'train/',  # Modified
+        classes=classes,  # Added
+        pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'val2017/',
+        ann_file=data_root + 'annotations_valid.json',  # Modified
+        img_prefix=data_root + 'valid/',  # Modified
+        classes=classes,  # Added
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        img_prefix=data_root + 'val2017/',
+        ann_file=data_root + 'annotations_test.json',  # Modified
+        img_prefix=data_root + 'test/',  # Modified
+        classes=classes,  # Added
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric=['bbox', 'segm'])
+evaluation = dict(interval=1,
+                  classwise=True,
+                  metric=['bbox', 'segm'],  # bbox, segm
+                  save_best='segm_mAP')
 
-# optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
-
-# learning policy
-# Experiments show that using step=[9, 11] has higher performance
 lr_config = dict(
-    policy='step',
+    policy='CosineAnnealing',
+    by_epoch=False,
     warmup='linear',
-    warmup_iters=500,
+    warmup_iters=125,
     warmup_ratio=0.001,
-    step=[9, 11])
+    min_lr=1e-07)
 runner = dict(type='EpochBasedRunner', max_epochs=12)
-
-
 checkpoint_config = dict(interval=1)
-# yapf:disable
 log_config = dict(
-    interval=50,
+    interval=10,
     hooks=[
         dict(type='TextLoggerHook'),
+        dict(type='WandbLoggerHook',  # wandb logger
+             init_kwargs=dict(project='sartorius-model-eva',
+                              name=f'cascade-pretrain',
+                              config={'config': 'mask_rcnn_r50_fpn_1x_coco',
+                                      'exp_name': 'mask_rcnn-resnet50-aug-exp',
+                                      'comment': 'baseline',
+                                      'batch_size': 2,
+                                      'lr': 0.020
+                                      },
+                              group='cascade',
+                              entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
-# yapf:enable
 custom_hooks = [dict(type='NumClassCheckHook')]
-
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = None
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/cascade_rcnn' \
+            '/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco' \
+            '/cascade_mask_rcnn_x101_64x4d_fpn_mstrain_3x_coco_20210719_210311-d3e64ba0.pth '
 resume_from = None
 workflow = [('train', 1)]
+seed = 0
+fp16 = dict(loss_scale=512.0)
