@@ -26,7 +26,7 @@ model = dict(
             type='AnchorGenerator',
             scales=[8],
             ratios=[0.5, 1.0, 2.0],
-            strides=[2, 4, 8, 16, 32]),
+            strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
             target_means=[.0, .0, .0, .0],
@@ -40,7 +40,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[2, 4, 8, 16]),  # 改小一点
+            featmap_strides=[4, 8, 16, 32]),  # 改小一点
         bbox_head=dict(
             type='Shared2FCBBoxHead',
             in_channels=256,
@@ -59,7 +59,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=14, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[2, 4, 8, 16]),
+            featmap_strides=[4, 8, 16, 32]),
         mask_head=dict(
             type='FCNMaskHead',
             num_convs=4,
@@ -211,7 +211,7 @@ log_config = dict(
                                       'batch_size': 2,
                                       'lr': 0.020
                                       },
-                              group='poor-mr-50-epoch',
+                              group='poor-mr-50epoch',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
