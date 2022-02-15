@@ -8,7 +8,7 @@ model = dict(
         depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
+        frozen_stages=-1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
         style='pytorch',  # 网络风格：如果设置pytorch，则stride为2的层是conv3x3的卷积层；如果设置caffe，则stride为2的层是第一个conv1x1的卷积层

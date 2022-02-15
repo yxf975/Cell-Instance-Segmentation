@@ -26,7 +26,7 @@ model = dict(
             type='AnchorGenerator',
             scales=[8],
             ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64]),
+            strides=[2, 4, 8, 16, 32]),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
             target_means=[.0, .0, .0, .0],
@@ -40,7 +40,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[4, 8, 16, 32]),
+            featmap_strides=[4, 8, 16, 32]), # 改小一点
         bbox_head=dict(
             type='Shared2FCBBoxHead',
             in_channels=256,
@@ -156,7 +156,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,  # BATCH_SIZE
+    samples_per_gpu=2,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,

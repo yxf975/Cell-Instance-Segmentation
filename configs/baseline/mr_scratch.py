@@ -8,7 +8,7 @@ model = dict(
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
+        frozen_stages=-1,  # 冻结的stage数量，即该stage不更新参数，-1表示所有的stage都更新参数
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
         style='pytorch',  # 网络风格：如果设置pytorch，则stride为2的层是conv3x3的卷积层；如果设置caffe，则stride为2的层是第一个conv1x1的卷积层
@@ -218,6 +218,6 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_1x_coco/mask_rcnn_r50_fpn_1x_coco_20200205-d4b0c5d6.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
