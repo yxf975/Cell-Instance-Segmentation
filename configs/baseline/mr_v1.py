@@ -211,7 +211,7 @@ log_config = dict(
                                       'batch_size': 2,
                                       'lr': 0.020
                                       },
-                              group='poor-mr',
+                              group='poor-mr-50-epoch',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
