@@ -40,7 +40,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[2, 4, 8, 16, 32]),
+            featmap_strides=[2, 4, 8, 16]),
         bbox_head=dict(
             type='Shared2FCBBoxHead',
             in_channels=256,
@@ -59,7 +59,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=14, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[2, 4, 8, 16, 32]),
+            featmap_strides=[2, 4, 8, 16]),
         mask_head=dict(
             type='FCNMaskHead',
             num_convs=4,
@@ -209,7 +209,7 @@ log_config = dict(
                                       'batch_size': 2,
                                       'lr': 0.020
                                       },
-                              group='poor-mr',
+                              group='poor-mr-50epoch',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
