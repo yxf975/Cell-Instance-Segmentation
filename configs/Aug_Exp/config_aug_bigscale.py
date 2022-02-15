@@ -1,4 +1,5 @@
 num_classes = 3
+img_scale = (1536, 1536)
 
 # model settings
 model = dict(
@@ -15,7 +16,7 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
     neck=dict(
         type='FPN',  # neck类型
-        in_channels=[256, 512, 1024, 2048], # 输入的各个stage的通道数
+        in_channels=[256, 512, 1024, 2048],  # 输入的各个stage的通道数
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -40,7 +41,7 @@ model = dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
-            featmap_strides=[4, 8, 16, 32]),
+            featmap_strides=[4, 8, 16, 32]),  # 改小一点
         bbox_head=dict(
             type='Shared2FCBBoxHead',
             in_channels=256,
@@ -123,21 +124,43 @@ model = dict(
 
 # dataset settings
 dataset_type = 'CocoDataset'
-classes = ('astro', 'cort', 'shsy5y',)  # Added
+classes = ('shsy5y', 'astro', 'cort')  # Added
 data_root = '../data/sartorius_coco_dataset/'  # Modified
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize',     # Augmentation pipeline that resize the images and their annotations
-         img_scale=(1280, 1280), keep_ratio=True),
-    dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=[0.5, 0.5]),  # Augmentation pipeline that flip the images and their annotations
-    # dict(type='PhotoMetricDistortion',
-    #      brightness_delta=32, contrast_range=(0.5, 1.5),
-    #      saturation_range=(0.5, 1.5), hue_delta=18),
+    dict(type='Mosaic', img_scale=img_scale, pad_val=114.0),
+    dict(
+        type='RandomAffine',
+        scaling_ratio_range=(0.1, 2),
+        border=(-img_scale[0] // 2, -img_scale[1] // 2)
+    ),
+    dict(
+        type='MixUp',
+        img_scale=img_scale,
+        ratio_range=(0.5, 1.5),
+        pad_val=114.0
+    ),
+    dict(
+        type='PhotoMetricDistortion',
+        brightness_delta=32,
+        contrast_range=(0.5, 1.5),
+        saturation_range=(0.5, 1.5),
+        hue_delta=18
+    ),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='Resize', img_scale=img_scale, keep_ratio=True),
+    dict(
+        type='Pad',
+        pad_to_square=True,
+        pad_val=dict(img=(114.0, 114.0, 114.0))
+    ),
+    dict(type='FilterAnnotations', min_gt_bbox_wh=(1, 1), keep_empty=False),
+
+
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks']),
 ]
@@ -145,19 +168,24 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1280, 1280),  # (1280, 1280),
+        img_scale=img_scale,  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
+            dict(
+                type='Pad',
+                pad_to_square=True,
+                pad_val=dict(img=(114.0, 114.0, 114.0))
+            ),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
         ])
 ]
+
 data = dict(
-    samples_per_gpu=2,  # BATCH_SIZE
+    samples_per_gpu=4,  # BATCH_SIZE
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -192,7 +220,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=0.001,
     step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=15)
+runner = dict(type='EpochBasedRunner', max_epochs=20)
 
 # default_runtime
 checkpoint_config = dict(interval=1)
@@ -203,14 +231,14 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-aug-exp',
-                              name=f'bigscale-flip-exp',
+                              name=f'mr-newpara',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
-                                      'batch_size': 12,
+                                      'batch_size': 2,
                                       'lr': 0.020
                                       },
-                              group='exp_name',
+                              group='new-para',
                               entity=None))
         # dict(type='TensorboardLoggerHook')
     ])
@@ -219,6 +247,6 @@ custom_hooks = [dict(type='NumClassCheckHook')]
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_1x_coco/mask_rcnn_r50_fpn_1x_coco_20200205-d4b0c5d6.pth'
+load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth'
 resume_from = None
 workflow = [('train', 1)]
