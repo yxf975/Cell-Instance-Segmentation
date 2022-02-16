@@ -12,7 +12,7 @@ import argparse
 
 WIDTH = 704
 HEIGHT = 520
-confidence_thresholds = {0: 0.35, 1: 0.55, 2: 0.7}
+confidence_thresholds = {0: 0.35, 1: 0.4, 2: 0.6}
 pixel_thresholds = {0: 75, 1: 150, 2: 75}
 cell_type = ['shsy5y', 'astro', 'cort']
 

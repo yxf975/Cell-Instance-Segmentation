@@ -95,13 +95,21 @@ if __name__ == "__main__":
     test_df = df.query("fold in @FOLD_TEST")
     print("length:", len(train_df), len(valid_df), len(test_df))
 
+    sample_ids = ['0030fd0e6378', '0f08d640930b',
+                  '129f894abe35', '174793807517',
+                  '029e5b3b89c7', '049f02e0f764']
+    df_fp = test_df.query("id in @sample_ids")
+    print(len(df_fp))
+
     train_json = coco_structure(train_df)
     valid_json = coco_structure(valid_df)
     test_json = coco_structure(test_df)
+    fp_json = coco_structure(df_fp)
 
     print(train_json['annotations'][0])
     print(valid_json['annotations'][0])
     print(test_json['annotations'][0])
+    print(fp_json['annotations'][0])
 
     with open(targetDataDir + '/annotations_train.json', 'w', encoding='utf-8') as f:
         json.dump(train_json, f, ensure_ascii=True, indent=4)
@@ -109,6 +117,8 @@ if __name__ == "__main__":
         json.dump(valid_json, f, ensure_ascii=True, indent=4)
     with open(targetDataDir + '/annotations_test.json', 'w', encoding='utf-8') as f:
         json.dump(test_json, f, ensure_ascii=True, indent=4)
+    with open(targetDataDir + '/annotations_fp.json', 'w', encoding='utf-8') as f:
+        json.dump(fp_json, f, ensure_ascii=True, indent=4)
 
     tmp_df = df.groupby('id').agg('first').reset_index()
     _ = Parallel(n_jobs=-1,
@@ -116,7 +126,7 @@ if __name__ == "__main__":
         tmp_df.iterrows(), total=len(tmp_df)))
 
     # check
-    annFile = Path(targetDataDir + '/annotations_valid.json')
+    annFile = Path(targetDataDir + '/annotations_fp.json')
     coco = COCO(annFile)
     imgIds = coco.getImgIds()
 

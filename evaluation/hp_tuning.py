@@ -195,6 +195,35 @@ def iou_map(truths, preds, verbose=0):
 
     return np.mean(prec)
 
+# def plotCorrThre(cellType):
+#     thres = np.linspace(0.1, 0.9, 20)
+#     typeCode = cell_type[cellType]
+#     scores = []
+#     for thre in thres:
+#         i = 0
+#         score = []
+#         for item in iter(ds_val):
+#             if types[i] != typeCode:
+#                 i += 1
+#                 continue
+#             img, targets = item
+#             masks = np.zeros((HEIGHT, WIDTH))
+#             for mask in targets['masks']:
+#                 masks = np.logical_or(masks, mask)
+#             model.eval()
+#             with torch.no_grad():
+#                 preds = model([img.to(DEVICE)])[0]
+#
+#             all_preds_masks = np.zeros((HEIGHT, WIDTH))
+#             for mask in preds['masks'].cpu().detach().numpy():
+#                 all_preds_masks = np.logical_or(all_preds_masks, mask[0] > thre)
+#             cur_score = iou_map(masks.numpy(),all_preds_masks,verbose = 0)
+#             score.append(cur_score)
+#             i += 1
+#         scores.append(np.mean(score))
+#     plt.title(cellType)
+#     plt.plot(thres, scores)
+
 
 if __name__ == "__main__":
     # parse para
@@ -211,36 +240,28 @@ if __name__ == "__main__":
     ckpt = args.model
     device = 'cuda:0'
     model = init_detector(config=cfg, checkpoint=ckpt, device=device)
-    annfile = '../data/sartorius_coco_dataset/annotations_test.json'
+    annfile = '../data/sartorius_coco_dataset/annotations_fp.json'
     testdir = '../data/sartorius_coco_dataset/test/'
     coco = COCO(annfile)
     print(coco.cats)
-    misscls_cnt = 0
-    cat_cnts = [0] * 4
     scores = [[], [], []]
+    score_collect = [[] for _ in range(3)]
     print("---------------------evaluation-------------------------")
     for imgid, imgInfo in coco.imgs.items():
         imgPath = testdir + imgInfo['file_name']
         annIds = coco.getAnnIds(imgIds=[imgid])
         anns = coco.loadAnns(annIds)
         cat = anns[0]['category_id']
-        if cat_cnts[1] >= 2 and cat_cnts[2] >= 2 and cat_cnts[3] >= 2:
-            break
-        if cat_cnts[cat] >= 2:
-            continue
-        cat_cnts[cat] += 1
         ann_mask = np.zeros((HEIGHT, WIDTH))
         for ann in anns:
             ann_mask = np.logical_or(ann_mask, coco.annToMask(ann))
         img = mmcv.imread(imgPath)
         result = inference_detector(model, img)
         model.eval()
-        show_result_pyplot(model, img, result)
         pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
         pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2]))) + 1
         print(cat, pred_class)
         if cat != pred_class:
-            misscls_cnt += 1
             print("big big error-------------big big error-----------------big big error------")
             print("big big error-------------big big error-----------------big big error------")
             print("big big error-------------big big error-----------------big big error------")
@@ -262,10 +283,10 @@ if __name__ == "__main__":
                         pred_mask.append(mask)
         scores[cat - 1].append(iou_map(ann_mask, pred))
     total, cnt = 0, 0
-    print("The number of misclassification cases:", misscls_cnt)
     for i in range(3):
         total += sum(scores[i])
         cnt += len(scores[i])
+        score_collect[i].append()
         print("mAP for class {} :".format(cell_type[i]), np.mean(scores[i]))
     print("mAP for all:", total / cnt)
 
