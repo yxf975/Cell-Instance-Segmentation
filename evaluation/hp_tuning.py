@@ -236,7 +236,7 @@ if __name__ == "__main__":
             model.eval()
             pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
             pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2]))) + 1
-            print(cat, pred_class)
+            # print(cat, pred_class)
             if cat != pred_class:
                 print("big big error-------------big big error-----------------big big error------")
                 print("big big error-------------big big error-----------------big big error------")

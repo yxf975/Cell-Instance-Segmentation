@@ -238,7 +238,7 @@ if __name__ == "__main__":
         # show_result_pyplot(model, img, result)
         pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
         pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))+1
-        print(cat, pred_class)
+        # print(cat, pred_class)
         if cat != pred_class:
             misscls_cnt += 1
             print("big big error-------------big big error-----------------big big error------")
