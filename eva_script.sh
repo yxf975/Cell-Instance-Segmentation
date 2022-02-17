@@ -2,8 +2,8 @@
 
 CONFIG=$1
 MODEL=$2
-echo "第一个参数为：$CONFIG";
-echo "第二个参数为：$MODEL";
+echo "config path：$CONFIG";
+echo "model path：$MODEL";
 
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
-python -m ./evaluation/hp_tuning.py $CONFIG $MODEL
+python -m ./evaluation/hp_tuning.py --config=$CONFIG model=$MODEL
