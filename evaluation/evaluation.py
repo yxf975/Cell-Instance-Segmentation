@@ -265,6 +265,7 @@ if __name__ == "__main__":
         cnt += len(scores[i])
         print("mAP for class {} :".format(cell_type[i]), np.mean(scores[i]))
     print("mAP for all:", total/cnt)
+    print("choosed thres:", confidence_thresholds)
 
 
 
