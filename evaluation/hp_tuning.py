@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
@@ -10,6 +9,7 @@ from pycocotools.coco import COCO
 import cupy as cp
 import argparse
 import json
+import os
 
 WIDTH = 704
 HEIGHT = 520
@@ -205,6 +205,9 @@ if __name__ == "__main__":
     print(args.config)
     print(args.model)
 
+    dir_path = os.path.dirname(args.model)
+    print(dir_path)
+
     # cfg = Config.fromfile('../configs/config_aug_exp.py')
     cfg = Config.fromfile(args.config)
     print(f'Config:\n{cfg.pretty_text}')
@@ -266,7 +269,7 @@ if __name__ == "__main__":
         ind = np.argmax(score_collect[i])
         confidence_thresholds[i] = thres[ind]
     print(confidence_thresholds)
-    with open('./thres.json', 'w', encoding='utf-8') as f:
+    with open(dir_path+'thres.json', 'w', encoding='utf-8') as f:
         json.dump(confidence_thresholds, f)
 
     # -----------------------infer情况----------------------------

@@ -1,4 +1,4 @@
-import sys
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
@@ -27,7 +27,7 @@ def does_overlap(mask, other_masks):
 def remove_overlapping_pixels(mask, other_masks):
     for other_mask in other_masks:
         if np.sum(np.logical_and(mask, other_mask)) > 0:
-            print("Overlap detected")
+            # print("Overlap detected")
             mask[np.logical_and(mask, other_mask)] = 0
     return mask
 
@@ -204,7 +204,10 @@ if __name__ == "__main__":
     print(args.config)
     print(args.model)
 
-    with open("./thres.json") as f:
+    dir_path = os.path.dirname(args.model)
+    print(dir_path)
+
+    with open(dir_path + "/thres.json") as f:
         confidence_thresholds = json.load(f)
     print(confidence_thresholds)
 
@@ -232,7 +235,7 @@ if __name__ == "__main__":
         img = mmcv.imread(imgPath)
         result = inference_detector(model, img)
         model.eval()
-        show_result_pyplot(model, img, result)
+        # show_result_pyplot(model, img, result)
         pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
         pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2])))+1
         print(cat, pred_class)
