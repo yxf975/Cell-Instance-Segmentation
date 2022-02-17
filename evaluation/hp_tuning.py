@@ -27,7 +27,7 @@ def does_overlap(mask, other_masks):
 def remove_overlapping_pixels(mask, other_masks):
     for other_mask in other_masks:
         if np.sum(np.logical_and(mask, other_mask)) > 0:
-            print("Overlap detected")
+            # print("Overlap detected")
             mask[np.logical_and(mask, other_mask)] = 0
     return mask
 
