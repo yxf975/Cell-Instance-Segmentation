@@ -9,10 +9,10 @@ from mmcv import Config
 from pycocotools.coco import COCO
 import cupy as cp
 import argparse
+import json
 
 WIDTH = 704
 HEIGHT = 520
-confidence_thresholds = {0: 0.35, 1: 0.55, 2: 0.7}
 pixel_thresholds = {0: 75, 1: 150, 2: 75}
 cell_type = ['shsy5y', 'astro', 'cort']
 
@@ -195,35 +195,6 @@ def iou_map(truths, preds, verbose=0):
 
     return np.mean(prec)
 
-# def plotCorrThre(cellType):
-#     thres = np.linspace(0.1, 0.9, 20)
-#     typeCode = cell_type[cellType]
-#     scores = []
-#     for thre in thres:
-#         i = 0
-#         score = []
-#         for item in iter(ds_val):
-#             if types[i] != typeCode:
-#                 i += 1
-#                 continue
-#             img, targets = item
-#             masks = np.zeros((HEIGHT, WIDTH))
-#             for mask in targets['masks']:
-#                 masks = np.logical_or(masks, mask)
-#             model.eval()
-#             with torch.no_grad():
-#                 preds = model([img.to(DEVICE)])[0]
-#
-#             all_preds_masks = np.zeros((HEIGHT, WIDTH))
-#             for mask in preds['masks'].cpu().detach().numpy():
-#                 all_preds_masks = np.logical_or(all_preds_masks, mask[0] > thre)
-#             cur_score = iou_map(masks.numpy(),all_preds_masks,verbose = 0)
-#             score.append(cur_score)
-#             i += 1
-#         scores.append(np.mean(score))
-#     plt.title(cellType)
-#     plt.plot(thres, scores)
-
 
 if __name__ == "__main__":
     # parse para
@@ -244,51 +215,59 @@ if __name__ == "__main__":
     testdir = '../data/sartorius_coco_dataset/test/'
     coco = COCO(annfile)
     print(coco.cats)
-    scores = [[], [], []]
     score_collect = [[] for _ in range(3)]
+    thres = np.linspace(0.05, 0.85, 21)
     print("---------------------evaluation-------------------------")
-    for imgid, imgInfo in coco.imgs.items():
-        imgPath = testdir + imgInfo['file_name']
-        annIds = coco.getAnnIds(imgIds=[imgid])
-        anns = coco.loadAnns(annIds)
-        cat = anns[0]['category_id']
-        ann_mask = np.zeros((HEIGHT, WIDTH))
-        for ann in anns:
-            ann_mask = np.logical_or(ann_mask, coco.annToMask(ann))
-        img = mmcv.imread(imgPath)
-        result = inference_detector(model, img)
-        model.eval()
-        pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
-        pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2]))) + 1
-        print(cat, pred_class)
-        if cat != pred_class:
-            print("big big error-------------big big error-----------------big big error------")
-            print("big big error-------------big big error-----------------big big error------")
-            print("big big error-------------big big error-----------------big big error------")
-        pred_mask = []
-        pred = np.zeros((HEIGHT, WIDTH))
-        for i, classe in enumerate(result[0]):
-            if classe.shape != (0, 5):
-                bbs = classe
-                sgs = result[1][i]
-                for bb, sg in zip(bbs, sgs):
-                    box = bb[:4]
-                    cnf = bb[4]
-                    count = np.count_nonzero(sg)
-                    if cnf >= confidence_thresholds[i] and count >= pixel_thresholds[i]:
-                        #                 if cnf >= confidence_thresholds[i]:
-                        mask = get_mask_from_result(sg)
-                        mask = remove_overlapping_pixels(mask, pred_mask)
-                        pred = np.logical_or(cp.asnumpy(mask), pred)
-                        pred_mask.append(mask)
-        scores[cat - 1].append(iou_map(ann_mask, pred))
-    total, cnt = 0, 0
+    for thre in thres:
+        scores = [[], [], []]
+        for imgid, imgInfo in coco.imgs.items():
+            imgPath = testdir + imgInfo['file_name']
+            annIds = coco.getAnnIds(imgIds=[imgid])
+            anns = coco.loadAnns(annIds)
+            cat = anns[0]['category_id']
+            ann_mask = np.zeros((HEIGHT, WIDTH))
+            for ann in anns:
+                ann_mask = np.logical_or(ann_mask, coco.annToMask(ann))
+            img = mmcv.imread(imgPath)
+            result = inference_detector(model, img)
+            model.eval()
+            pred_class_ls = [len(result[0][0]), len(result[0][1]), len(result[0][2])]
+            pred_class = pred_class_ls.index(max(len(result[0][0]), len(result[0][1]), len(result[0][2]))) + 1
+            print(cat, pred_class)
+            if cat != pred_class:
+                print("big big error-------------big big error-----------------big big error------")
+                print("big big error-------------big big error-----------------big big error------")
+                print("big big error-------------big big error-----------------big big error------")
+            pred_mask = []
+            pred = np.zeros((HEIGHT, WIDTH))
+            for i, classe in enumerate(result[0]):
+                if classe.shape != (0, 5):
+                    bbs = classe
+                    sgs = result[1][i]
+                    for bb, sg in zip(bbs, sgs):
+                        box = bb[:4]
+                        cnf = bb[4]
+                        count = np.count_nonzero(sg)
+                        if cnf >= thre and count >= pixel_thresholds[i]:
+                            #                 if cnf >= confidence_thresholds[i]:
+                            mask = get_mask_from_result(sg)
+                            mask = remove_overlapping_pixels(mask, pred_mask)
+                            pred = np.logical_or(cp.asnumpy(mask), pred)
+                            pred_mask.append(mask)
+            scores[cat - 1].append(iou_map(ann_mask, pred))
+        print("current thre:", thre)
+        for i in range(3):
+            score_collect[i].append(np.mean(scores[i]))
+            print("mAP for class {} :".format(cell_type[i]), np.mean(scores[i]))
+    print(thres)
+    print(score_collect)
+    confidence_thresholds = {}
     for i in range(3):
-        total += sum(scores[i])
-        cnt += len(scores[i])
-        score_collect[i].append()
-        print("mAP for class {} :".format(cell_type[i]), np.mean(scores[i]))
-    print("mAP for all:", total / cnt)
+        ind = np.argmax(score_collect[i])
+        confidence_thresholds[i] = thres[ind]
+    print(confidence_thresholds)
+    with open('./thres.json', 'w', encoding='utf-8') as f:
+        json.dump(confidence_thresholds, f)
 
     # -----------------------infer情况----------------------------
 

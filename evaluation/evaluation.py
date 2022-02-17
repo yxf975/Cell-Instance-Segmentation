@@ -9,10 +9,10 @@ from mmcv import Config
 from pycocotools.coco import COCO
 import cupy as cp
 import argparse
+import json
 
 WIDTH = 704
 HEIGHT = 520
-confidence_thresholds = {0: 0.25, 1: 0.55, 2: 0.35}
 pixel_thresholds = {0: 75, 1: 150, 2: 75}
 cell_type = ['shsy5y', 'astro', 'cort']
 
@@ -204,6 +204,9 @@ if __name__ == "__main__":
     print(args.config)
     print(args.model)
 
+    with open("./thres.json") as f:
+        confidence_thresholds = json.load(f)
+    print(confidence_thresholds)
 
     # cfg = Config.fromfile('../configs/config_aug_exp.py')
     cfg = Config.fromfile(args.config)
@@ -248,7 +251,7 @@ if __name__ == "__main__":
                     box = bb[:4]
                     cnf = bb[4]
                     count = np.count_nonzero(sg)
-                    if cnf >= confidence_thresholds[i] and count >= pixel_thresholds[i]:
+                    if cnf >= confidence_thresholds[str(i)] and count >= pixel_thresholds[i]:
                         #                 if cnf >= confidence_thresholds[i]:
                         mask = get_mask_from_result(sg)
                         mask = remove_overlapping_pixels(mask, pred_mask)
