@@ -269,7 +269,7 @@ if __name__ == "__main__":
         ind = np.argmax(score_collect[i])
         confidence_thresholds[i] = thres[ind]
     print(confidence_thresholds)
-    with open(dir_path+'thres.json', 'w', encoding='utf-8') as f:
+    with open(dir_path+'/thres.json', 'w', encoding='utf-8') as f:
         json.dump(confidence_thresholds, f)
 
     # -----------------------infer情况----------------------------
