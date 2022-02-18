@@ -239,12 +239,13 @@ optimizer = dict(
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
-    policy='step',
+    policy='CosineAnnealing',
+    by_epoch=False,
     warmup='linear',
-    warmup_iters=1000,
+    warmup_iters=250,
     warmup_ratio=0.001,
-    step=[27, 33])
-runner = dict(type='EpochBasedRunner', max_epochs=30)
+    min_lr=1e-07)
+runner = dict(type='EpochBasedRunner', max_epochs=50)
 
 checkpoint_config = dict(interval=1)
 # yapf:disable
@@ -254,7 +255,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-model-eva',
-                              name=f'swin_v1',
+                              name=f'swin_pre',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
@@ -271,4 +272,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth"
 resume_from = None
+seed = 0
 workflow = [('train', 1)]
