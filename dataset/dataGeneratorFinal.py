@@ -94,7 +94,7 @@ if __name__ == "__main__":
     valid_df = df.query("fold==@FOLD_VAL")
     test_df = df.query("fold in @FOLD_TEST")
     print("length:", len(train_df), len(valid_df), len(test_df))
-    print("训练集中各细胞type数目:")
+    print("训练集中Cell_type数目:")
     print("shsy5y:", train_df.loc[train_df['cell_type'] == 'shsy5y', 'id'].nunique())
     print("astro:", train_df.loc[train_df['cell_type'] == 'astro', 'id'].nunique())
     print("cort:", train_df.loc[train_df['cell_type'] == 'cort', 'id'].nunique())
@@ -109,45 +109,45 @@ if __name__ == "__main__":
     print(len(df_fp))
     print(df_fp['id'].unique())
     print(df_fp['cell_type'].unique())
-    #
-    # train_json = coco_structure(train_df)
-    # valid_json = coco_structure(valid_df)
-    # test_json = coco_structure(test_df)
-    # fp_json = coco_structure(df_fp)
-    #
-    # print(train_json['annotations'][0])
-    # print(valid_json['annotations'][0])
-    # print(test_json['annotations'][0])
-    # print(fp_json['annotations'][0])
-    #
-    # with open(targetDataDir + '/annotations_train.json', 'w', encoding='utf-8') as f:
-    #     json.dump(train_json, f, ensure_ascii=True, indent=4)
-    # with open(targetDataDir + '/annotations_valid.json', 'w', encoding='utf-8') as f:
-    #     json.dump(valid_json, f, ensure_ascii=True, indent=4)
-    # with open(targetDataDir + '/annotations_test.json', 'w', encoding='utf-8') as f:
-    #     json.dump(test_json, f, ensure_ascii=True, indent=4)
-    # with open(targetDataDir + '/annotations_fp.json', 'w', encoding='utf-8') as f:
-    #     json.dump(fp_json, f, ensure_ascii=True, indent=4)
-    #
-    # tmp_df = df.groupby('id').agg('first').reset_index()
-    # _ = Parallel(n_jobs=-1,
-    #              backend='threading')(delayed(run_copy)(row) for _, row in tqdm(
-    #     tmp_df.iterrows(), total=len(tmp_df)))
-    #
-    # # check
-    # annFile = Path(targetDataDir + '/annotations_fp.json')
-    # coco = COCO(annFile)
-    # imgIds = coco.getImgIds()
-    #
-    # imgs = coco.loadImgs(imgIds[-3:])
-    # _, axs = plt.subplots(len(imgs), 2)
-    # for img, ax in zip(imgs, axs):
-    #     I = Image.open(dataDir / img['file_name'])
-    #     annIds = coco.getAnnIds(imgIds=[img['id']])
-    #     anns = coco.loadAnns(annIds)
-    #     ax[0].imshow(I)
-    #     ax[1].imshow(I)
-    #     plt.sca(ax[1])
-    #     coco.showAnns(anns, draw_bbox=True)
-    # plt.tight_layout()
-    # plt.show()
+
+    train_json = coco_structure(train_df)
+    valid_json = coco_structure(valid_df)
+    test_json = coco_structure(test_df)
+    fp_json = coco_structure(df_fp)
+
+    print(train_json['annotations'][0])
+    print(valid_json['annotations'][0])
+    print(test_json['annotations'][0])
+    print(fp_json['annotations'][0])
+
+    with open(targetDataDir + '/annotations_train.json', 'w', encoding='utf-8') as f:
+        json.dump(train_json, f, ensure_ascii=True, indent=4)
+    with open(targetDataDir + '/annotations_valid.json', 'w', encoding='utf-8') as f:
+        json.dump(valid_json, f, ensure_ascii=True, indent=4)
+    with open(targetDataDir + '/annotations_test.json', 'w', encoding='utf-8') as f:
+        json.dump(test_json, f, ensure_ascii=True, indent=4)
+    with open(targetDataDir + '/annotations_fp.json', 'w', encoding='utf-8') as f:
+        json.dump(fp_json, f, ensure_ascii=True, indent=4)
+
+    tmp_df = df.groupby('id').agg('first').reset_index()
+    _ = Parallel(n_jobs=-1,
+                 backend='threading')(delayed(run_copy)(row) for _, row in tqdm(
+        tmp_df.iterrows(), total=len(tmp_df)))
+
+    # check
+    annFile = Path(targetDataDir + '/annotations_fp.json')
+    coco = COCO(annFile)
+    imgIds = coco.getImgIds()
+
+    imgs = coco.loadImgs(imgIds[-3:])
+    _, axs = plt.subplots(len(imgs), 2)
+    for img, ax in zip(imgs, axs):
+        I = Image.open(dataDir / img['file_name'])
+        annIds = coco.getAnnIds(imgIds=[img['id']])
+        anns = coco.loadAnns(annIds)
+        ax[0].imshow(I)
+        ax[1].imshow(I)
+        plt.sca(ax[1])
+        coco.showAnns(anns, draw_bbox=True)
+    plt.tight_layout()
+    plt.show()
