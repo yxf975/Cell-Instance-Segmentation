@@ -219,7 +219,7 @@ if __name__ == "__main__":
     coco = COCO(annfile)
     print(coco.cats)
     score_collect = [[] for _ in range(3)]
-    thres = np.linspace(0.0, 0.8, 21)
+    thres = np.linspace(0.0, 0.9, 19)
     print("---------------------evaluation-------------------------")
     for thre in thres:
         scores = [[], [], []]
