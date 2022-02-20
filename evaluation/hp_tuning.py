@@ -214,7 +214,7 @@ if __name__ == "__main__":
     ckpt = args.model
     device = 'cuda:0'
     model = init_detector(config=cfg, checkpoint=ckpt, device=device)
-    annfile = '../data/sartorius_coco_dataset/annotations_valid.json'
+    annfile = '../data/sartorius_coco_dataset/annotations_fp.json'
     testdir = '../data/sartorius_coco_dataset/valid/'
     coco = COCO(annfile)
     print(coco.cats)
