@@ -38,6 +38,7 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, d
         dilation=dilation,
     )
 
+
 def conv5x5(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
     """3x3 convolution with padding"""
     return nn.Conv2d(
@@ -45,11 +46,12 @@ def conv5x5(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, d
         out_planes,
         kernel_size=5,
         stride=stride,
-        padding=2*dilation,
+        padding=2 * dilation,
         groups=groups,
         bias=False,
         dilation=dilation,
     )
+
 
 def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
@@ -58,16 +60,17 @@ def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
 
 class BasicBlock(nn.Module):
     expansion: int = 1
+
     def __init__(
-        self,
-        inplanes: int,
-        planes: int,
-        stride: int = 1,
-        downsample: Optional[nn.Module] = None,
-        groups: int = 1,
-        base_width: int = 64,
-        dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            inplanes: int,
+            planes: int,
+            stride: int = 1,
+            downsample: Optional[nn.Module] = None,
+            groups: int = 1,
+            base_width: int = 64,
+            dilation: int = 1,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
         if norm_layer is None:
@@ -101,16 +104,17 @@ class BasicBlock(nn.Module):
 
 class Bottleneck(nn.Module):
     expansion: int = 4
+
     def __init__(
-        self,
-        inplanes: int,
-        planes: int,
-        stride: int = 1,
-        downsample: Optional[nn.Module] = None,
-        groups: int = 1,
-        base_width: int = 64,
-        dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            inplanes: int,
+            planes: int,
+            stride: int = 1,
+            downsample: Optional[nn.Module] = None,
+            groups: int = 1,
+            base_width: int = 64,
+            dilation: int = 1,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
         if norm_layer is None:
@@ -146,15 +150,16 @@ class Bottleneck(nn.Module):
 
 class AC5_Module(nn.Module):
     expansion: int = 4
+
     def __init__(
-        self,
-        inplanes: int,
-        planes: int,
-        stride: int = 1,
-        downsample: Optional[nn.Module] = None,
-        groups: int = 1,
-        base_width: int = 64,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            inplanes: int,
+            planes: int,
+            stride: int = 1,
+            downsample: Optional[nn.Module] = None,
+            groups: int = 1,
+            base_width: int = 64,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
         if norm_layer is None:
@@ -203,7 +208,7 @@ class AC5_Module(nn.Module):
         acm2 = self.elu(acm2)
         acm2 = self.conv3_d2(acm2)
         acm2 = self.bn3_d2(acm2)
-        acm3 =  self.conv1_d3(x)
+        acm3 = self.conv1_d3(x)
         acm3 = self.bn1_d3(acm3)
         acm3 = self.elu(acm3)
         acm3 = self.conv2_d3(acm3)
@@ -223,18 +228,19 @@ class AC5_Module(nn.Module):
         out = self.elu(out)
         return out
 
+
 @BACKBONES.register_module()
 class ACMResNet(nn.Module):
     def __init__(
-        self,
-        block: Type[Union[BasicBlock, Bottleneck]],
-        layers: List[int],
-        num_classes: int = 1000,
-        zero_init_residual: bool = False,
-        groups: int = 1,
-        width_per_group: int = 64,
-        replace_stride_with_dilation: Optional[List[bool]] = None,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            block: Type[Union[BasicBlock, Bottleneck]] = Bottleneck,
+            layers: List[int] = [3, 4, 6, 3],
+            num_classes: int = 1000,
+            zero_init_residual: bool = False,
+            groups: int = 1,
+            width_per_group: int = 64,
+            replace_stride_with_dilation: Optional[List[bool]] = None,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
         if norm_layer is None:
@@ -278,13 +284,13 @@ class ACMResNet(nn.Module):
                     nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
 
     def _make_layer(
-        self,
-        block: Type[Union[BasicBlock, Bottleneck]],
-        planes: int,
-        blocks: int,
-        stride: int = 1,
-        dilate: bool = False,
-        acm: bool = False
+            self,
+            block: Type[Union[BasicBlock, Bottleneck]],
+            planes: int,
+            blocks: int,
+            stride: int = 1,
+            dilate: bool = False,
+            acm: bool = False
     ) -> nn.Sequential:
         norm_layer = self._norm_layer
         downsample = None
@@ -317,7 +323,8 @@ class ACMResNet(nn.Module):
         else:
             layers.append(
                 block(
-                    self.inplanes, planes, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer
+                    self.inplanes, planes, stride, downsample, self.groups, self.base_width, previous_dilation,
+                    norm_layer
                 )
             )
             self.inplanes = planes * block.expansion
@@ -340,25 +347,33 @@ class ACMResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
+        outs = []
+        print(x.shape)
         x = self.layer1(x)
+        outs.append(x)
+        print(x.shape)
         x = self.layer2(x)
+        outs.append(x)
+        print(x.shape)
         x = self.layer3(x)
+        outs.append(x)
+        print(x.shape)
         x = self.layer4(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc(x)
-        return x
+        outs.append(x)
+        print(outs)
+        return tuple(outs)
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)
 
+
 def _acm_resnet(
-    arch: str,
-    block: Type[Union[BasicBlock, Bottleneck]],
-    layers: List[int],
-    pretrained: bool,
-    progress: bool,
-    **kwargs: Any,
+        arch: str,
+        block: Type[Union[BasicBlock, Bottleneck]],
+        layers: List[int],
+        pretrained: bool,
+        progress: bool,
+        **kwargs: Any,
 ) -> ACMResNet:
     model = ACMResNet(block, layers, **kwargs)
     if pretrained:
@@ -389,6 +404,6 @@ def acmresnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any)
 
 
 if __name__ == '__main__':
-  x = torch.randn((4,3,254,254))
-  model = acmresnet50()
-  y = model(x)
+    x = torch.randn((4, 3, 254, 254))
+    model = acmresnet50()
+    y = model(x)
