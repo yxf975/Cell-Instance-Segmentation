@@ -111,8 +111,8 @@ model = dict(
             debug=False)),
     test_cfg=dict(
         rpn=dict(
-            nms_pre=2000,
-            max_per_img=2000,
+            nms_pre=3000,
+            max_per_img=1000,
             nms=dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
@@ -213,7 +213,7 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='WandbLoggerHook',  # wandb logger
              init_kwargs=dict(project='sartorius-model-eva',
-                              name=f'mr-v2',
+                              name=f'mr-v2-3000',
                               config={'config': 'mask_rcnn_r50_fpn_1x_coco',
                                       'exp_name': 'mask_rcnn-resnet50-aug-exp',
                                       'comment': 'baseline',
@@ -233,3 +233,4 @@ load_from = 'https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn
 resume_from = None
 workflow = [('train', 1)]
 fp16 = dict(loss_scale=512.0)
+seed = 0
