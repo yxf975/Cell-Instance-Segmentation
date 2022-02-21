@@ -128,8 +128,8 @@ model = dict(
             pos_weight=-1,
             debug=False),
         rpn_proposal=dict(
-            nms_pre=2000,
-            max_per_img=2000,
+            nms_pre=3000,
+            max_per_img=3000,
             nms=dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0,
             nms_post=2000),

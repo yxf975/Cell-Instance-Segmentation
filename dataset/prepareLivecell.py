@@ -38,7 +38,7 @@ def to_multiclass(ann_file):
         subdir = filename.split('_')[0]
         img_info['file_name'] = os.path.join(subdir, filename)
         cat = subdir.lower()
-        if cat != "shsy5y":
+        if cat == "shsy5y":
             continue
 
         img_infos.append(img_info)
