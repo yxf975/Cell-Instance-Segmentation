@@ -186,7 +186,8 @@ class AC5_Module(nn.Module):
 
         self.conv_fusion = conv1x1(3 * planes * self.expansion, planes * self.expansion)
         self.bn_fusion = norm_layer(planes * self.expansion)
-        self.elu = nn.ELU()
+        self.relu = nn.ReLU(inplace=True)
+        # self.elu = nn.ELU()
         self.downsample = downsample
         self.stride = stride
 
@@ -194,38 +195,38 @@ class AC5_Module(nn.Module):
         identity = x
         acm1 = self.conv1_d1(x)
         acm1 = self.bn1_d1(acm1)
-        acm1 = self.elu(acm1)
+        acm1 = self.relu(acm1)
         acm1 = self.conv2_d1(acm1)
         acm1 = self.bn2_d1(acm1)
-        acm1 = self.elu(acm1)
+        acm1 = self.relu(acm1)
         acm1 = self.conv3_d1(acm1)
         acm1 = self.bn3_d1(acm1)
         acm2 = self.conv1_d2(x)
         acm2 = self.bn1_d2(acm2)
-        acm2 = self.elu(acm2)
+        acm2 = self.relu(acm2)
         acm2 = self.conv2_d2(acm2)
         acm2 = self.bn2_d2(acm2)
-        acm2 = self.elu(acm2)
+        acm2 = self.relu(acm2)
         acm2 = self.conv3_d2(acm2)
         acm2 = self.bn3_d2(acm2)
         acm3 = self.conv1_d3(x)
         acm3 = self.bn1_d3(acm3)
-        acm3 = self.elu(acm3)
+        acm3 = self.relu(acm3)
         acm3 = self.conv2_d3(acm3)
         acm3 = self.bn2_d3(acm3)
-        acm3 = self.elu(acm3)
+        acm3 = self.relu(acm3)
         acm3 = self.conv3_d3(acm3)
         acm3 = self.bn3_d3(acm3)
-        print(acm1.shape)
-        print(acm2.shape)
-        print(acm3.shape)
+        # print(acm1.shape)
+        # print(acm2.shape)
+        # print(acm3.shape)
         out = self.conv_fusion(torch.cat([acm1, acm2, acm3], dim=1))
         out = self.bn_fusion(out)
-        out = self.elu(out)
+        out = self.relu(out)
         if self.downsample is not None:
             identity = self.downsample(x)
         out += identity
-        out = self.elu(out)
+        out = self.relu(out)
         return out
 
 
