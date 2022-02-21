@@ -94,6 +94,68 @@ class BasicBlock(BaseModule):
         return out
 
 
+def conv5x5(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
+    """3x3 convolution with padding"""
+    return nn.Conv2d(
+        in_planes,
+        out_planes,
+        kernel_size=5,
+        stride=stride,
+        padding=2 * dilation,
+        groups=groups,
+        bias=False,
+        dilation=dilation,
+    )
+
+
+def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
+    """1x1 convolution"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+
+
+class AC5_Module(nn.Module):
+    expansion: int = 4
+
+    def __init__(
+            self,
+            inplanes: int,
+            planes: int,
+            stride: int = 1,
+            downsample: Optional[nn.Module] = None,
+            groups: int = 1,
+            base_width: int = 64,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
+    ) -> None:
+        super().__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        width = int(planes * (base_width / 64.0)) * groups
+        self.conv1_d1 = conv1x1(inplanes, width)
+        self.bn1_d1 = norm_layer(width)
+        self.conv2_d1 = conv5x5(width, width, stride, groups, dilation=1)
+        self.bn2_d1 = norm_layer(width)
+        self.conv3_d1 = conv1x1(width, planes * self.expansion)
+        self.bn3_d1 = norm_layer(planes * self.expansion)
+        self.conv1_d2 = conv1x1(inplanes, width)
+        self.bn1_d2 = norm_layer(width)
+        self.conv2_d2 = conv5x5(width, width, stride, groups, dilation=2)
+        self.bn2_d2 = norm_layer(width)
+        self.conv3_d2 = conv1x1(width, planes * self.expansion)
+        self.bn3_d2 = norm_layer(planes * self.expansion)
+        self.conv1_d3 = conv1x1(inplanes, width)
+        self.bn1_d3 = norm_layer(width)
+        self.conv2_d3 = conv5x5(width, width, stride, groups, dilation=4)
+        self.bn2_d3 = norm_layer(width)
+        self.conv3_d3 = conv1x1(width, planes * self.expansion)
+        self.bn3_d3 = norm_layer(planes * self.expansion)
+
+        self.conv_fusion = conv1x1(3 * planes * self.expansion, planes * self.expansion)
+        self.bn_fusion = norm_layer(planes * self.expansion)
+        self.elu = nn.ELU()
+        self.downsample = downsample
+        self.stride = stride
+
+
 class Bottleneck(BaseModule):
     expansion = 4
 
@@ -459,7 +521,7 @@ class ResNet(BaseModule):
                 stage_plugins = self.make_stage_plugins(plugins, i)
             else:
                 stage_plugins = None
-            planes = base_channels * 2**i
+            planes = base_channels * 2 ** i
             res_layer = self.make_res_layer(
                 block=self.block,
                 inplanes=self.inplanes,
@@ -482,8 +544,8 @@ class ResNet(BaseModule):
 
         self._freeze_stages()
 
-        self.feat_dim = self.block.expansion * base_channels * 2**(
-            len(self.stage_blocks) - 1)
+        self.feat_dim = self.block.expansion * base_channels * 2 ** (
+                len(self.stage_blocks) - 1)
 
     def make_stage_plugins(self, plugins, stage_idx):
         """Make plugins for ResNet ``stage_idx`` th stage.

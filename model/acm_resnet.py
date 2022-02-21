@@ -2,6 +2,7 @@ from typing import Type, Any, Callable, Union, List, Optional
 
 import torch
 import torch.nn as nn
+from ..builder import BACKBONES
 from torch import Tensor
 
 __all__ = [
@@ -222,7 +223,7 @@ class AC5_Module(nn.Module):
         out = self.elu(out)
         return out
 
-
+@BACKBONES.register_module()
 class ACMResNet(nn.Module):
     def __init__(
         self,
