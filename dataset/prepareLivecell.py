@@ -46,7 +46,7 @@ def to_multiclass(ann_file):
             ann_info = copy.deepcopy(ann_info)
             ann_info['image_id'] = img_id
             ann_info['id'] = ann_id
-            ann_info['category_id'] = CAT2IDX[cat]
+            ann_info['category_id'] = 1
             ann_infos.append(ann_info)
             ann_id += 1
         img_id += 1
