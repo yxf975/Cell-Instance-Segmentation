@@ -236,7 +236,6 @@ class ACMResNet(nn.Module):
             self,
             block: Type[Union[BasicBlock, Bottleneck]] = Bottleneck,
             layers: List[int] = [3, 4, 6, 3],
-            num_classes: int = 1000,
             zero_init_residual: bool = False,
             groups: int = 1,
             width_per_group: int = 64,
@@ -270,7 +269,6 @@ class ACMResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2, dilate=replace_stride_with_dilation[1])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
