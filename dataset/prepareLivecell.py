@@ -9,7 +9,7 @@ CATEGORIES = (
     'shsy5y', 'a172', 'bt474', 'bv2', 'huh7', 'mcf7', 'skov3', 'skbr3'
 )
 
-CAT2IDX = {cat: idx for idx, cat in enumerate(CATEGORIES)}
+CAT2IDX = {'cell': 0}
 
 
 def init_coco():
