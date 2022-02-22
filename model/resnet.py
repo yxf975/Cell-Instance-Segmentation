@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import Tensor
 from torch.nn import functional as F
 
-from ._internally_replaced_utils import load_state_dict_from_url
+# from ._internally_replaced_utils import load_state_dict_from_url
 
 # from ..utils import _log_api_usage_once
 
@@ -324,11 +324,16 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         x = self.maxpool(x)
+        print(x.shape)
 
         x = self.layer1(x)
+        print(x.shape)
         x = self.layer2(x)
+        print(x.shape)
         x = self.layer3(x)
+        print(x.shape)
         x = self.layer4(x)
+        print(x.shape)
 
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
@@ -522,3 +527,9 @@ def wide_resnet101_2(pretrained: bool = False, progress: bool = True, **kwargs: 
     """
     kwargs["width_per_group"] = 64 * 2
     return _resnet("wide_resnet101_2", Bottleneck, [3, 4, 23, 3], pretrained, progress, **kwargs)
+
+
+if __name__ == '__main__':
+    x = torch.randn((4, 3, 254, 254))
+    model = resnet50()
+    y = model(x)
