@@ -130,7 +130,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Resize', img_scale=(1333, 1333), keep_ratio=True),
+    dict(type='Resize', img_scale=(800, 800), keep_ratio=True),
     # Augmentation pipeline that resize the images and their annotations
     dict(type='RandomFlip', direction=['horizontal', 'vertical'], flip_ratio=0.5),
     # Augmentation pipeline that flip the images and their annotations
@@ -146,7 +146,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1333, 1333),  # (1280, 1280),
+        img_scale=(800, 800),  # (1280, 1280),
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
