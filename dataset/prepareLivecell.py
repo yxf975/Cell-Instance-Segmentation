@@ -60,13 +60,13 @@ def to_multiclass(ann_file):
 if __name__ == '__main__':
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_train.json'),
-        '../../data/LIVECell_dataset_2021/train_shsy5y.json'
+        '../../data/LIVECell_dataset_2021/train.json'
     )
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_val.json'),
-        '../../data/LIVECell_dataset_2021/val_shsy5y.json'
+        '../../data/LIVECell_dataset_2021/val.json'
     )
     mmcv.dump(
         to_multiclass('../../data/LIVECell_dataset_2021/annotations/LIVECell/livecell_coco_test.json'),
-        '../../data/LIVECell_dataset_2021/test_shsy5y.json'
+        '../../data/LIVECell_dataset_2021/test.json'
     )
